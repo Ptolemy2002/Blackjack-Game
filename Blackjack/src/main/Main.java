@@ -34,7 +34,7 @@ import licenses.LicenseManager;
  * @author Ptolemy Henson
  * 
  * A Blackjack game.
- * https://github.com/Ptolemy2002/Java-code/tree/master/Blackjack
+ * https://github.com/Ptolemy2002/Blackjack-Game
  * 
  * Uses json-simple-1.1.1
  * https://github.com/fangyidong/json-simple/
