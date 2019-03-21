@@ -78,8 +78,13 @@ public class LicenseManager {
 	 */
 	public static void updateLicenses(Class<?> mainClass) {
 		for (String i : getLicenses()) {
-			Tools.Files.writeToFile(HOME_PATH + "\\licenses\\" + i + ".txt",
-					Tools.Files.getResource(licensePaths.get(i), mainClass));
+			if (Tools.Files.fileExists(licensePaths.get(i))) {
+				Tools.Files.writeToFile(HOME_PATH + "\\licenses\\" + i + ".txt",
+						Tools.Files.readFile(licensePaths.get(i), mainClass));
+				//System.out.println(i + ", " + licensePaths.get(i));
+			} else {
+				//System.out.println(i + ", " + licensePaths.get(i) + " no exist.");
+			}
 		}
 	}
 }

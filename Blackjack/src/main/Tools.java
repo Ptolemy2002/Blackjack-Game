@@ -178,6 +178,28 @@ public class Tools {
 				return null;
 			}
 		}
+		
+		public static boolean isWindowsPath(String path) {
+			return path.matches("^([a-zA-Z]:)?((\\{1,2})?(.+(\\+)?)+)?$");
+		}
+		
+		/**
+		 * Reads the data from a file path. Use double "\"s for file path (single "/" on
+		 * linux) Can be either in the jar or in the file system, this will check.
+		 * 
+		 * Will create the path and file if it doesn't exist.
+		 * 
+		 * @param filePath
+		 * @return the data present in the file. Will return an empty string if the file
+		 *         was created or "null" if an IOException happens.
+		 */
+		public static String readFile(String path, Class<?> mainClass) {
+			if (isWindowsPath(path)) {
+				return readFromFile(path);
+			} else {
+				return getResource(path, mainClass);
+			}
+		}
 
 		/**
 		 * Writes data to a file path. Use double "\"s for file path (single "/" on
@@ -255,6 +277,10 @@ public class Tools {
 		public static boolean fileExists(String path) {
 			return new File(path).getAbsoluteFile().exists();
 		}
+		
+		public static boolean fileExists(String path, Class<?> mainClass) {
+			return readFile(path, mainClass) != null;
+		}
 
 		/**
 		 * Delete a file.
@@ -311,7 +337,6 @@ public class Tools {
 					resStreamOut.write(buffer, 0, readBytes);
 				}
 			} catch (IOException ex) {
-				return false;
 			} finally {
 				try {
 					stream.close();

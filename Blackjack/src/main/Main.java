@@ -44,7 +44,7 @@ public class Main {
 	/**
 	 * This should be true if running in eclipse, but false otherwise.
 	 */
-	public static final boolean DEBUG_MODE = true;
+	public static final boolean DEBUG_MODE = false;
 
 	public static Double minBet = 2.0;
 	public static Double maxBet = 500.0;
@@ -729,7 +729,12 @@ public class Main {
 
 		if (cont) {
 			LicenseManager.setHomePath(PATH);
-			LicenseManager.addLicense("json-simple", "/licenses/json-simple/license.txt", Main.class);
+			if (!DEBUG_MODE) {
+				LicenseManager.addLicense("json-simple", "/licenses/json-simple/license.txt", Main.class);
+			} else {
+				LicenseManager.addLicense("json-simple", "src\\licenses\\json-simple\\license.txt", Main.class);
+			}
+			
 			System.out.println("Blackjack v" + VERSION);
 			game = new BlackjackGame(deck);
 
@@ -883,6 +888,7 @@ public class Main {
 						System.out.println(
 								"restore defaults - will delete the latest save file and restore default settings.");
 						System.out.println("patch notes - view the patch notes of any specific version of Blackjack.");
+						System.out.println("view licenses - view the licenses of associated software. You can also find these in the file system at \"" + PATH + "\\licenses");
 
 						System.out.println("");
 						System.out.println(
