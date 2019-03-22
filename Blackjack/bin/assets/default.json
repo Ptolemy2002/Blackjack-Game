@@ -6,7 +6,7 @@
 	"maxAIBet": 500.0,
 	"maxHits": 2147483647,
 	"deck": "standard",
-	"version": "1.1",
+	"version": "1.1.2",
 
 	"players": [
 		{

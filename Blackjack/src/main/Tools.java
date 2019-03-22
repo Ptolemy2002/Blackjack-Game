@@ -32,7 +32,7 @@ import javax.swing.filechooser.FileSystemView;
  * Many Java methods that could be useful in various situations.
  * 
  * @author Ptolemy2002
- * @version b1.3
+ * @version b1.4
  */
 public class Tools {
 
@@ -59,6 +59,129 @@ public class Tools {
 	 */
 	public static class Strings {
 
+		/**
+		 * Test if the specified segment is present at the specified index of the
+		 * specified target.
+		 * 
+		 * @param target  the string that should have the segment
+		 * @param segment the segment to test for
+		 * @param index   the index to test for the segment at
+		 * @return whether the specified segment is present at the specified index of
+		 *         the specified target.
+		 */
+		public static boolean segment(String target, String segment, int index) {
+			for (int i = index; i - index < segment.length(); i++) {
+				Character char1 = target.charAt(i);
+				Character char2 = segment.charAt(i - index);
+				if (!char1.equals(char2)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		/**
+		 * Replace the specified segment with the specified replacement unless the
+		 * segment is wrapped in one of the specified ignreChar sets.
+		 * 
+		 * @param target      the string to replace the segment in
+		 * @param segment     the segment to replace
+		 * @param replacement the string to replace the segment with
+		 * @param ignoreChars the set of ignoreChars. Each item should have a length of
+		 *                    exactly 2, with the start of the encasement at index 0,
+		 *                    and the end at index 1. For example, if you wanted to
+		 *                    ignore segments encased in brackets, I would add
+		 *                    {@code {"[", "]"}} to the list.
+		 * @return The string with the specified segment replaced with the specified
+		 *         replacement unless the segment is wrapped in one of the specified
+		 *         ignreChar sets.
+		 */
+		public static String replace(String target, String segment, String replacement, String[]... ignoreChars) {
+			String res = "";
+			boolean ignore = false;
+
+			for (int i = 0; i < target.length(); i++) {
+				for (String[] ignoreChar : ignoreChars) {
+					if (!ignoreChar[0].equals(ignoreChar[1])) {
+						if (segment(target, ignoreChar[0], i)) {
+							ignore = true;
+							break;
+						} else if (segment(target, ignoreChar[1], i)) {
+							ignore = false;
+						}
+					} else {
+						if (segment(target, ignoreChar[0], i)) {
+							ignore = !ignore;
+							break;
+						}
+					}
+
+				}
+
+				if (!ignore && segment(target, segment, i)) {
+					res += replacement;
+					i += replacement.length() - 2;
+				} else {
+					res += target.charAt(i);
+				}
+			}
+
+			return res;
+		}
+
+		/**
+		 * Formats a JSON string with new lines and tabs.
+		 * 
+		 * @param json the original JSON string
+		 * @return The formatted JSON string
+		 */
+		public static String prettyPrintJSON(String json) {
+			// Add new lines where required
+			json.replace("\n", "");
+			String res1 = json;
+			res1 = replace(res1, "{", "{\n", new String[] { "\"", "\"" });
+			res1 = replace(res1, "[", "[\n", new String[] { "\"", "\"" });
+			res1 = replace(res1, "}", "\n}", new String[] { "\"", "\"" });
+			res1 = replace(res1, "]", "\n]", new String[] { "\"", "\"" });
+			res1 = replace(res1, ",", ",\n", new String[] { "\"", "\"" });
+
+			// Insert tabs
+			String res2 = "{\n";
+			String[] split = res1.split("\n");
+			int tabs = 1;
+			for (int j = 1; j < split.length - 1; j++) {
+				String i = split[j];
+				Character lastChar;
+				if (i.length() != 0) {
+					lastChar = i.charAt(i.length() - 1);
+					if (lastChar == '}' || lastChar == ']') {
+						tabs--;
+					}  else if (lastChar == ',') {
+						lastChar = i.charAt(i.length() - 2);
+						if (lastChar == '}' || lastChar == ']') {
+							tabs--;
+						}
+					}
+				}
+
+				String line = "";
+				for (int k = 0; k < tabs; k++) {
+					line += "\t";
+				}
+				line += i;
+				res2 += line + "\n";
+
+				if (i.length() != 0) {
+					lastChar = i.charAt(i.length() - 1);
+					if (lastChar == '{' || lastChar == '[') {
+						tabs++;
+					}
+				}
+			}
+			res2 += "}";
+			return res2;
+		}
 	}
 
 	/**
@@ -178,11 +301,11 @@ public class Tools {
 				return null;
 			}
 		}
-		
+
 		public static boolean isWindowsPath(String path) {
 			return path.matches("^([a-zA-Z]:)?((\\{1,2})?(.+(\\+)?)+)?$");
 		}
-		
+
 		/**
 		 * Reads the data from a file path. Use double "\"s for file path (single "/" on
 		 * linux) Can be either in the jar or in the file system, this will check.
@@ -277,7 +400,7 @@ public class Tools {
 		public static boolean fileExists(String path) {
 			return new File(path).getAbsoluteFile().exists();
 		}
-		
+
 		public static boolean fileExists(String path, Class<?> mainClass) {
 			return readFile(path, mainClass) != null;
 		}
@@ -817,7 +940,7 @@ public class Tools {
 			if (name != null) {
 				System.out.println(name + ":");
 			}
-			
+
 			for (int i = 0; i < Math.min(list.size(), maxLines - 1); i++) {
 				if (showIndex) {
 					System.out.print((i + 1) + ") " + list.get(i).toString() + "\n");
