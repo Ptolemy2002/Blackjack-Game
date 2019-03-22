@@ -42,7 +42,7 @@ public class Main {
 	/**
 	 * This should be true if running in eclipse, but false otherwise.
 	 */
-	public static final boolean DEBUG_MODE = false;
+	public static final boolean DEBUG_MODE = true;
 
 	public static Double minBet = 2.0;
 	public static Double maxBet = 500.0;
@@ -860,7 +860,6 @@ public class Main {
 						}
 						break;
 					case "quit":
-						System.out.println("Goodbye.");
 						break loop;
 					case "properties":
 						properties();
@@ -994,7 +993,6 @@ public class Main {
 								true)) {
 							Tools.Files.deleteFile(new File(PATH + "\\saves\\latest.json"));
 							System.out.println("A game restart is required.");
-							System.out.println("Goodbye.");
 							break loop;
 						}
 						break;
@@ -1022,7 +1020,7 @@ public class Main {
 						break;
 					}
 					System.out.println("");
-					// throw new Exception("test");
+					//throw new Exception("test");
 				} catch (Exception e) {
 					System.out.println("The game has crashed!");
 					if (Tools.Console.askBoolean("Would you like to view the error?", true)) {
@@ -1041,10 +1039,11 @@ public class Main {
 						System.out.println("There was an error saving the crash report!");
 						System.out.println("");
 					}
-					System.out.println("We have recovered from the crash.");
 					System.out.println("");
+					break loop;
 				}
 			}
+			Tools.Console.ask("ENTER to exit.");
 		}
 
 	}
