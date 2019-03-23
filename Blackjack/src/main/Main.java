@@ -319,7 +319,8 @@ public class Main {
 				}
 				decksSave.put(i, cards);
 			}
-			if (Tools.Files.writeToFile(PATH + "\\decks.json", Tools.Strings.prettyPrintJSON(decksSave.toJSONString()))) {
+			if (Tools.Files.writeToFile(PATH + "\\decks.json",
+					Tools.Strings.prettyPrintJSON(decksSave.toJSONString()))) {
 				System.out.println("Successfully saved the decks.");
 			} else {
 				System.out.println("There was an error writing to the file \"" + PATH + "\\decks.json" + "\"");
@@ -411,7 +412,8 @@ public class Main {
 			latestSave.put(i, value.get(i));
 		}
 
-		if (!Tools.Files.writeToFile(PATH + "\\saves\\" + save + ".json", Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
+		if (!Tools.Files.writeToFile(PATH + "\\saves\\" + save + ".json",
+				Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
 			System.out.println("There was an error saving to the save \"" + save + "\"");
 		} else {
 			System.out.println("Successfully saved to the save file \"" + save + "\"");
@@ -437,10 +439,11 @@ public class Main {
 			for (Object i : defaultSave.keySet()) {
 				latestSave.put(i, defaultSave.get(i));
 			}
-			
+
 			latestSave.put("version", VERSION);
 
-			if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json", Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
+			if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json",
+					Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
 				System.out.println("There was an error writing to the latest save file!");
 			} else {
 				System.out.println("Successfully wrote to the latest save file!");
@@ -463,7 +466,8 @@ public class Main {
 				latestSave.put(i, defaultSave.get(i));
 			}
 
-			if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json", Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
+			if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json",
+					Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
 				System.out.println("There was an error writing to the latest save file!");
 			} else {
 				System.out.println("Successfully wrote to the latest save file!");
@@ -490,10 +494,11 @@ public class Main {
 			for (Object i : defaultSave.keySet()) {
 				latestSave.put(i, defaultSave.get(i));
 			}
-			
+
 			latestSave.put("version", VERSION);
 
-			if (!Tools.Files.writeToFile(PATH + "\\saves\\" + save + ".json", Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
+			if (!Tools.Files.writeToFile(PATH + "\\saves\\" + save + ".json",
+					Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
 				System.out.println("There was an error writing to the save file \"" + save + "\"");
 			} else {
 				System.out.println("Successfully wrote to the save file \"" + save + "\"");
@@ -516,7 +521,8 @@ public class Main {
 				latestSave.put(i, defaultSave.get(i));
 			}
 
-			if (!Tools.Files.writeToFile(PATH + "\\saves\\" + save + ".json", Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
+			if (!Tools.Files.writeToFile(PATH + "\\saves\\" + save + ".json",
+					Tools.Strings.prettyPrintJSON(latestSave.toJSONString()))) {
 				System.out.println("There was an error writing to the save file \"" + save + "\"");
 			} else {
 				System.out.println("Successfully wrote to the save file \"" + save + "\"");
@@ -720,8 +726,8 @@ public class Main {
 					batch.createNewFile();
 					PrintWriter writer = new PrintWriter(batch);
 					writer.println("@echo off");
-					writer.println("java -jar " + filename);
-					writer.println("exit");
+					writer.println("java -jar \"" + filename.replace("%20", " ") + "\"");
+					//writer.println("exit");
 					writer.flush();
 					writer.close();
 					Runtime.getRuntime().exec("cmd /c start \"\" \"" + batch.getPath() + "\"");
@@ -733,94 +739,94 @@ public class Main {
 		}
 
 		if (cont) {
-			LicenseManager.setHomePath(PATH);
-			if (!DEBUG_MODE) {
-				LicenseManager.addLicense("json-simple", "/licenses/json-simple/license.txt", Main.class);
-			} else {
-				LicenseManager.addLicense("json-simple", "src\\licenses\\json-simple\\license.txt", Main.class);
-			}
-
-			System.out.println("Blackjack v" + VERSION);
-			game = new BlackjackGame(deck);
-
-			if (!DEBUG_MODE) {
-				// System.out.println(Tools.Files.readFromFile(PATH + "\\version.txt"));
-				if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")
-						|| !Tools.Files.fileExists(PATH + "\\version.txt")
-						|| !Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
-					System.out.println("The latest save file does not yet exist or is not up to date.");
-					System.out.println("Initializing it...");
-					saveToDefault();
-					/*if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json",
-							Tools.Files.getResource("/assets/default.json", Main.class))) {
-						System.out.println("There was an error initializing the latest save file!");
-					} else {
-						System.out.println("Initialized!");
-					}*/
+			try {
+				LicenseManager.setHomePath(PATH);
+				if (!DEBUG_MODE) {
+					LicenseManager.addLicense("json-simple", "/licenses/json-simple/license.txt", Main.class);
+				} else {
+					LicenseManager.addLicense("json-simple", "src\\licenses\\json-simple\\license.txt", Main.class);
 				}
-			} else {
-				if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")
-						|| !Tools.Files.fileExists(PATH + "\\version.txt")
-						|| !Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
-					System.out.println("The latest save file does not yet exist or is not up to date.");
-					System.out.println("Initializing it...");
-					saveToDefault();
-					/*
-					 * if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json",
-					 * Tools.Files.readFromFile("src\\assets\\default.json"))) {
-					 * System.out.println("There was an error initializing the latest save file!");
-					 * } else { System.out.println("Initialized!"); }
-					 */
+
+				System.out.println("Blackjack v" + VERSION);
+				game = new BlackjackGame(deck);
+
+				if (!DEBUG_MODE) {
+					// System.out.println(Tools.Files.readFromFile(PATH + "\\version.txt"));
+					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")
+							|| !Tools.Files.fileExists(PATH + "\\version.txt")
+							|| !Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
+						System.out.println("The latest save file does not yet exist or is not up to date.");
+						System.out.println("Initializing it...");
+						saveToDefault();
+						/*
+						 * if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json",
+						 * Tools.Files.getResource("/assets/default.json", Main.class))) {
+						 * System.out.println("There was an error initializing the latest save file!");
+						 * } else { System.out.println("Initialized!"); }
+						 */
+					}
+				} else {
+					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")
+							|| !Tools.Files.fileExists(PATH + "\\version.txt")
+							|| !Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
+						System.out.println("The latest save file does not yet exist or is not up to date.");
+						System.out.println("Initializing it...");
+						saveToDefault();
+						/*
+						 * if (!Tools.Files.writeToFile(PATH + "\\saves\\latest.json",
+						 * Tools.Files.readFromFile("src\\assets\\default.json"))) {
+						 * System.out.println("There was an error initializing the latest save file!");
+						 * } else { System.out.println("Initialized!"); }
+						 */
+					}
+					// System.out.println(Tools.Files.readFromFile("src\\assets\\default.json"));
 				}
-				// System.out.println(Tools.Files.readFromFile("src\\assets\\default.json"));
-			}
 
-			loadSaveWithErrorCheck("latest");
-			System.out.println("");
+				loadSaveWithErrorCheck("latest");
+				System.out.println("");
 
-			if (!Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
-				System.out.println("Welcome to the new version of Blackjack!");
-				if (Tools.Console.askBoolean("Would you like to read the patch notes?", true)) {
-					printPatchNotes(Tools.Files.readFromFile(PATH + "\\version.txt").equals("") ? "1.0"
-							: Tools.Files.readFromFile(PATH + "\\version.txt"));
+				if (!Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
+					System.out.println("Welcome to the new version of Blackjack!");
+					if (Tools.Console.askBoolean("Would you like to read the patch notes?", true)) {
+						printPatchNotes(Tools.Files.readFromFile(PATH + "\\version.txt").equals("") ? "1.0"
+								: Tools.Files.readFromFile(PATH + "\\version.txt"));
+					}
 				}
-			}
-			
-			Tools.Files.writeToFile(PATH + "\\version.txt", VERSION);
-			System.out.println("Welcome to Blackjack!");
-			if (Tools.Console.askBoolean("Would you like to hear the rules?", true))
-				game.printDescription();
-			System.out.println("Okay! Let's go!");
-			System.out.println("");
 
-			ArrayList<String> choices = new ArrayList<String>() {
-				{
-					add("play");
-					add("player setup");
-					add("properties");
-					add("quit");
-					add("help");
-					add("rules");
-					add("bet setup");
-					add("bet reset");
-					add("save latest");
-					add("auto save enable");
-					add("auto save disable");
-					add("load latest");
-					add("save as");
-					add("load file");
-					add("delete save");
-					add("deck edit");
-					add("set deck");
-					add("deck standard");
-					add("restore defaults");
-					add("patch notes");
-					add("view licenses");
-				}
-			};
+				Tools.Files.writeToFile(PATH + "\\version.txt", VERSION);
+				System.out.println("Welcome to Blackjack!");
+				if (Tools.Console.askBoolean("Would you like to hear the rules?", true))
+					game.printDescription();
+				System.out.println("Okay! Let's go!");
+				System.out.println("");
 
-			loop: while (true) {
-				try {
+				ArrayList<String> choices = new ArrayList<String>() {
+					{
+						add("play");
+						add("player setup");
+						add("properties");
+						add("quit");
+						add("help");
+						add("rules");
+						add("bet setup");
+						add("bet reset");
+						add("save latest");
+						add("auto save enable");
+						add("auto save disable");
+						add("load latest");
+						add("save as");
+						add("load file");
+						add("delete save");
+						add("deck edit");
+						add("set deck");
+						add("deck standard");
+						add("restore defaults");
+						add("patch notes");
+						add("view licenses");
+					}
+				};
+
+				loop: while (true) {
 					game.setMaxHits(maxHits);
 					if (autoSave) {
 						System.out.println("Auto save is on! Saving to \"latest.json\"...");
@@ -940,7 +946,8 @@ public class Main {
 						System.out.println("Auto save has been disabled!");
 						break;
 					case "save latest":
-						Tools.Files.writeToFile(PATH + "\\saves\\latest.json", Tools.Strings.prettyPrintJSON(Tools.Strings.prettyPrintJSON(getCurrentSave().toJSONString())));
+						Tools.Files.writeToFile(PATH + "\\saves\\latest.json", Tools.Strings
+								.prettyPrintJSON(Tools.Strings.prettyPrintJSON(getCurrentSave().toJSONString())));
 						System.out.println("Saved the current data to latest.json");
 						break;
 					case "load latest":
@@ -1020,30 +1027,27 @@ public class Main {
 						break;
 					}
 					System.out.println("");
-					//throw new Exception("test");
-				} catch (Exception e) {
-					System.out.println("The game has crashed!");
-					if (Tools.Console.askBoolean("Would you like to view the error?", true)) {
-						e.printStackTrace();
-					}
-					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa");
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-					e.printStackTrace(pw);
-					pw.println("");
-					pw.println("save dump: \n" + Tools.Strings.prettyPrintJSON(getCurrentSave().toJSONString()));
-					String path = PATH + "\\crash reports\\" + dateFormat.format(new Date()) + ".txt";
-					if (Tools.Files.writeToFile(path, sw.toString())) {
-						System.out.println("Saved crash report to \"" + path + "\"");
-					} else {
-						System.out.println("There was an error saving the crash report!");
-						System.out.println("");
-					}
-					System.out.println("");
-					break loop;
+					// throw new Exception("test");
 				}
+			} catch (Exception e) {
+				System.out.println("The game has crashed!");
+				if (Tools.Console.askBoolean("Would you like to view the error?", true)) {
+					e.printStackTrace();
+				}
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa");
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				pw.println("");
+				pw.println("save dump: \n" + Tools.Strings.prettyPrintJSON(getCurrentSave().toJSONString()));
+				String path = PATH + "\\crash reports\\" + dateFormat.format(new Date()) + ".txt";
+				if (Tools.Files.writeToFile(path, sw.toString())) {
+					System.out.println("Saved crash report to \"" + path + "\"");
+				} else {
+					System.out.println("There was an error saving the crash report!");
+				}
+				System.out.println("");
 			}
-			Tools.Console.ask("ENTER to exit.");
 		}
 
 	}
