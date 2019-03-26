@@ -60,6 +60,9 @@ public class BlackjackGame extends CardGame {
 		System.out.println("Once the dealer goes over 17, the winner is determined.");
 		System.out.println("If you are closer to 21 than the dealer, you win and take double your bet!");
 		System.out.println("If you are farther from 21 than the dealer, you lose your bet.");
+		System.out.println("");
+		
+		System.out.println("More detailed rules are available here: https://github.com/Ptolemy2002/Blackjack-Game/wiki/Rules");
 	}
 
 	@Override
