@@ -752,10 +752,9 @@ public class Main {
 
 				if (!DEBUG_MODE) {
 					// System.out.println(Tools.Files.readFromFile(PATH + "\\version.txt"));
-					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")
-							|| !Tools.Files.fileExists(PATH + "\\version.txt")
-							|| !Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
-						System.out.println("The latest save file does not yet exist or is not up to date.");
+					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")) {
+						System.out.println("The latest save file does not yet exist.");
+						
 						System.out.println("Initializing it...");
 						saveToDefault();
 						/*
@@ -766,10 +765,8 @@ public class Main {
 						 */
 					}
 				} else {
-					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")
-							|| !Tools.Files.fileExists(PATH + "\\version.txt")
-							|| !Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
-						System.out.println("The latest save file does not yet exist or is not up to date.");
+					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")) {
+						System.out.println("The latest save file does not yet exist.");
 						System.out.println("Initializing it...");
 						saveToDefault();
 						/*
