@@ -783,6 +783,10 @@ public class Main {
 				System.out.println("");
 
 				if (!Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
+					System.out.println("B lackjack has been updated.");
+					if (Tools.Console.askBoolean("Would you like to load defaults?", true)) {
+						saveToDefault();
+					}
 					System.out.println("Welcome to the new version of Blackjack!");
 					if (Tools.Console.askBoolean("Would you like to read the patch notes?", true)) {
 						printPatchNotes(Tools.Files.readFromFile(PATH + "\\version.txt").equals("") ? "1.0"
