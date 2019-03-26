@@ -35,7 +35,7 @@ public class BlackjackGame extends CardGame {
 		System.out.println("");
 		System.out.println("Each player tries to get as close as possible to 21.");
 		System.out.println("When it is your turn, you can either stand, hit, or surrender.");
-		System.out.println("Standing means that you don't draw anything.");
+		System.out.println("Standing means that you don't draw anything and pass your turn.");
 		System.out.println("Hitting means you draw a card.");
 		System.out.println("If you surrender, you take back half your bet and stop playing.");
 		System.out.println("You can hit up to " + (this.maxHits == Integer.MAX_VALUE ? "Infinity" : this.maxHits)
@@ -43,6 +43,7 @@ public class BlackjackGame extends CardGame {
 		System.out.println("If you go over 21, you lose!");
 		System.out.println("This is called going 'bust'");
 		System.out.println("You can change the value of your aces to avoid going bust.");
+		System.out.println("If you go bust, you lose your bet.");
 
 		System.out.println("The dealer goes after every player, and must hit until the total is over 17.");
 		System.out.println("If the dealer goes bust, the user wins.");
@@ -59,6 +60,9 @@ public class BlackjackGame extends CardGame {
 		System.out.println("Once the dealer goes over 17, the winner is determined.");
 		System.out.println("If you are closer to 21 than the dealer, you win and take double your bet!");
 		System.out.println("If you are farther from 21 than the dealer, you lose your bet.");
+		System.out.println("");
+		
+		System.out.println("More detailed rules are available here: https://github.com/Ptolemy2002/Blackjack-Game/wiki/Rules");
 	}
 
 	@Override
@@ -102,7 +106,7 @@ public class BlackjackGame extends CardGame {
 		for (CardPlayer i : this.getPlayers()) {
 			i.setMoney(Tools.Numbers.roundDouble(i.getMoney(), 2));
 		}
-		
+
 		if (this.getDeck().getCards().size() < (2 * this.getPlayers().size()) + 2) {
 			System.out.println("The deck must be at least " + ((2 * this.getPlayers().size()) + 2)
 					+ " cards long to play this game.");
@@ -205,7 +209,7 @@ public class BlackjackGame extends CardGame {
 				}
 			}
 		}
-		
+
 		System.out.println("Winners will now be determined.");
 		for (CardPlayer i : this.getPlayers()) {
 			if (!((BlackjackPlayer) i).surrendered) {
