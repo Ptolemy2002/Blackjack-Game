@@ -303,7 +303,7 @@ public class Tools {
 		}
 
 		public static boolean isWindowsPath(String path) {
-			return path.matches("^([a-zA-Z]:(\\+))?(([^\\<\\>:\\\"/\\|\\?\\*]+(\\+)?)+)?$");
+			return path.matches("^([a-zA-Z]:([/\\\\]+))?[^/](([^\\<\\>:\\\"\\|\\?\\*]+([/\\\\]+)?)+)?$");
 		}
 
 		/**

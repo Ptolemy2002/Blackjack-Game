@@ -1,5 +1,6 @@
 package licenses;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,8 +17,9 @@ public class LicenseManager {
 	 * @param name      The name of the jar with the license
 	 * @param path      The path of the license file inside the jar
 	 * @param mainClass The class to use as the main class for the jar.
+	 * @throws IOException If the file path is nonexistent
 	 */
-	public static void addLicense(String name, String path, Class<?> mainClass) {
+	public static void addLicense(String name, String path, Class<?> mainClass) throws IOException {
 		licenses.add(name);
 		licensePaths.put(name, path);
 		updateLicenses(mainClass);
@@ -75,15 +77,17 @@ public class LicenseManager {
 	/**
 	 * Update the licenses in the file system. Will be called whenever a new license
 	 * is created.
+	 * 
+	 * @throws IOException If the file path is nonexistent
 	 */
-	public static void updateLicenses(Class<?> mainClass) {
+	public static void updateLicenses(Class<?> mainClass) throws IOException {
 		for (String i : getLicenses()) {
-			if (Tools.Files.fileExists(licensePaths.get(i))) {
+			if (Tools.Files.fileExists(licensePaths.get(i), mainClass)) {
 				Tools.Files.writeToFile(HOME_PATH + "\\licenses\\" + i + ".txt",
 						Tools.Files.readFile(licensePaths.get(i), mainClass));
-				//System.out.println(i + ", " + licensePaths.get(i));
 			} else {
-				//System.out.println(i + ", " + licensePaths.get(i) + " no exist.");
+				throw new IOException("The file path placed under the license \"" + i + "\" (" + licensePaths.get(i)
+						+ ") points to a nonexistent file!");
 			}
 		}
 	}
