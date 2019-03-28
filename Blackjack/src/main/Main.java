@@ -42,7 +42,7 @@ public class Main {
 	/**
 	 * This should be true if running in eclipse, but false otherwise.
 	 */
-	public static final boolean DEBUG_MODE = true;
+	public static final boolean DEBUG_MODE = false;
 
 	public static Double minBet = 2.0;
 	public static Double maxBet = 500.0;
@@ -727,7 +727,7 @@ public class Main {
 					PrintWriter writer = new PrintWriter(batch);
 					writer.println("@echo off");
 					writer.println("java -jar \"" + filename.replace("%20", " ") + "\"");
-					//writer.println("exit");
+					// writer.println("exit");
 					writer.flush();
 					writer.close();
 					Runtime.getRuntime().exec("cmd /c start \"\" \"" + batch.getPath() + "\"");
@@ -743,6 +743,8 @@ public class Main {
 				LicenseManager.setHomePath(PATH);
 				if (!DEBUG_MODE) {
 					LicenseManager.addLicense("json-simple", "/licenses/json-simple/license.txt", Main.class);
+					// System.out.println("Added json-simple license to " +
+					// LicenseManager.getFileSystemPath("json-simple"));
 				} else {
 					LicenseManager.addLicense("json-simple", "src\\licenses\\json-simple\\license.txt", Main.class);
 				}
@@ -754,7 +756,7 @@ public class Main {
 					// System.out.println(Tools.Files.readFromFile(PATH + "\\version.txt"));
 					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")) {
 						System.out.println("The latest save file does not yet exist.");
-						
+
 						System.out.println("Initializing it...");
 						saveToDefault();
 						/*
@@ -1027,7 +1029,7 @@ public class Main {
 						}
 						break;
 					}
-					System.out.println("hello");
+					System.out.println("");
 					// throw new Exception("test");
 				}
 			} catch (Exception e) {
@@ -1035,6 +1037,7 @@ public class Main {
 				if (Tools.Console.askBoolean("Would you like to view the error?", true)) {
 					e.printStackTrace();
 				}
+
 				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa");
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
