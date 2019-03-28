@@ -727,7 +727,7 @@ public class Main {
 					PrintWriter writer = new PrintWriter(batch);
 					writer.println("@echo off");
 					writer.println("java -jar \"" + filename.replace("%20", " ") + "\"");
-					//writer.println("exit");
+					// writer.println("exit");
 					writer.flush();
 					writer.close();
 					Runtime.getRuntime().exec("cmd /c start \"\" \"" + batch.getPath() + "\"");
@@ -754,7 +754,7 @@ public class Main {
 					// System.out.println(Tools.Files.readFromFile(PATH + "\\version.txt"));
 					if (!Tools.Files.fileExists(PATH + "\\saves\\latest.json")) {
 						System.out.println("The latest save file does not yet exist.");
-						
+
 						System.out.println("Initializing it...");
 						saveToDefault();
 						/*
