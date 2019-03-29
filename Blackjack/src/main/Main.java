@@ -42,7 +42,7 @@ public class Main {
 	/**
 	 * This should be true if running in eclipse, but false otherwise.
 	 */
-	public static final boolean DEBUG_MODE = true;
+	public static final boolean DEBUG_MODE = false;
 
 	public static Double minBet = 2.0;
 	public static Double maxBet = 500.0;
@@ -59,21 +59,27 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
-	public static final String VERSION = "1.1.2";
+	public static final String VERSION = "beta 2.0-1";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
 			{ "You can now convert ai players to normal and normal players to ai without data loss.",
 					"Added crash reports." },
 			{ "Crash reports now dump a copy of the save file along with the error.",
-					"Licenses now work in debug mode.", "The save file is now formatted for better json reading." } };
+					"Licenses now work in debug mode.", "The save file is now formatted for better json reading." },
+			{ "Began beta for 2.0 update, which wil include a user interface update",
+					"Redesigned interface for \"bet setup\" command.",
+					"The game will now warn you of unsaved changes before shutdown." } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
 			add("1.1");
 			add("1.1.1");
 			add("1.1.2");
+			add("beta 2.0-1");
 		}
 	};
+
+	public static JSONObject lastSave = null;
 
 	public static void testToString() {
 		while (true) {
@@ -165,34 +171,81 @@ public class Main {
 	}
 
 	public static void betSetup() {
-		ArrayList<CardPlayer> players = game.getPlayers();
-		if (players.isEmpty()) {
-			System.out.println("There are no players registered.");
-		} else {
-			CardPlayer player = Tools.Console.askSelection("Players", players, true, "Choose a player.", "CANCEL", true,
-					true, true);
-			if (player != null) {
-				if (player.isAI()) {
-					if (Tools.Console.askBoolean("Would you like to randomize the bet?", true)) {
-						player.makeBet(minAIBet, maxAIBet);
-					} else {
-						player.setBet(Tools.Console.askDouble(
-								player.toString() + "'s bet is $" + player.getBet()
-										+ ". What would you like to change it to?",
-								true, x -> x >= minAIBet && x <= maxAIBet,
-								"The minimum AI bet is $" + minAIBet + ". The maximum AI bet is $" + maxAIBet
-										+ " (you can change them in properties)."));
-						System.out.println("Changed bet!");
-					}
-				} else {
-					player.setBet(Tools.Console.askDouble(
-							player.toString() + "'s bet is $" + player.getBet()
-									+ ". What would you like to change it to?",
-							true, x -> x >= minBet && x <= maxBet, "The minimum bet is $" + minBet
-									+ ". The maximum bet is $" + maxBet + " (you can change them in properties)."));
-					System.out.println("Changed bet!");
-				}
+		ArrayList<String> choices = new ArrayList<String>() {
+			{
+				add("change bet");
+				add("view bet");
+				add("randomize bet");
+				add("quit");
+				add("help");
+				add("view players");
 			}
+		};
+		System.out.println("Welcome to the Blackjack bet setup console!");
+		System.out.println("Type a command. Type \"help\" to get your choices");
+		ArrayList<CardPlayer> players = game.getPlayers();
+		loop: while (true) {
+			String choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\bet setup>", null, true,
+					true, false, false);
+			System.out.println("");
+			switch (choice) {
+			case "help":
+				System.out.println("change bet - change the bet of a player");
+				System.out.println("view bet - view the bet of a player");
+				System.out.println("randomize bet - randomize the bet of a player");
+				System.out.println("help - view this list");
+				System.out.println("view players - view all the players");
+				System.out.println("quit - return to the main Blackjack console");
+				break;
+			case "quit":
+				break loop;
+			case "view players":
+				if (game.getPlayers().isEmpty()) {
+					System.out.println("There are no players registered.");
+				} else {
+					Tools.Console.printList("Players", game.getPlayers(), true);
+				}
+				break;
+			default:
+				CardPlayer player = Tools.Console.askSelection("Players", players, true, "Choose a player.", "CANCEL",
+						true, true, true);
+				if (player != null) {
+					switch (choice) {
+					case "randomize bet":
+						if (player.isAI()) {
+							player.setBet(Tools.Numbers.roundDouble(Tools.Numbers.randomDouble(minAIBet, maxAIBet), 2));
+						} else {
+							player.setBet(Tools.Numbers.roundDouble(Tools.Numbers.randomDouble(minBet, maxBet), 2));
+						}
+						System.out.println("Set " + player.getName() + "'s bet to $" + player.getBet());
+						break;
+					case "change bet":
+						if (player.isAI()) {
+							player.setBet(Tools.Console.askDouble(
+									player.toString() + "'s bet is $" + player.getBet()
+											+ ". What would you like to change it to?",
+									true, x -> x >= minAIBet && x <= maxAIBet,
+									"The minimum AI bet is $" + minAIBet + ". The maximum AI bet is $" + maxAIBet
+											+ " (you can change them in properties)."));
+						} else {
+							player.setBet(Tools.Console.askDouble(
+									player.toString() + "'s bet is $" + player.getBet()
+											+ ". What would you like to change it to?",
+									true, x -> x >= minBet && x <= maxBet,
+									"The minimum bet is $" + minBet + ". The maximum bet is $" + maxBet
+											+ " (you can change them in properties)."));
+						}
+						System.out.println("Set " + player.getName() + "'s bet to $" + player.getBet());
+						break;
+					case "view bet":
+						System.out.println(player.getName() + "'s bet is $" + player.getBet());
+						break;
+
+					}
+				}
+				break;
+			}
+			System.out.println("");
 		}
 	}
 
@@ -417,6 +470,7 @@ public class Main {
 			System.out.println("There was an error saving to the save \"" + save + "\"");
 		} else {
 			System.out.println("Successfully saved to the save file \"" + save + "\"");
+			lastSave = getCurrentSave();
 		}
 	}
 
@@ -447,6 +501,7 @@ public class Main {
 				System.out.println("There was an error writing to the latest save file!");
 			} else {
 				System.out.println("Successfully wrote to the latest save file!");
+				lastSave = getCurrentSave();
 			}
 		} else {
 			JSONObject latestSave = new JSONObject();
@@ -471,6 +526,7 @@ public class Main {
 				System.out.println("There was an error writing to the latest save file!");
 			} else {
 				System.out.println("Successfully wrote to the latest save file!");
+				lastSave = getCurrentSave();
 			}
 		}
 	}
@@ -502,6 +558,7 @@ public class Main {
 				System.out.println("There was an error writing to the save file \"" + save + "\"");
 			} else {
 				System.out.println("Successfully wrote to the save file \"" + save + "\"");
+				lastSave = getCurrentSave();
 			}
 		} else {
 			JSONObject latestSave = new JSONObject();
@@ -526,6 +583,7 @@ public class Main {
 				System.out.println("There was an error writing to the save file \"" + save + "\"");
 			} else {
 				System.out.println("Successfully wrote to the save file \"" + save + "\"");
+				lastSave = getCurrentSave();
 			}
 		}
 	}
@@ -780,10 +838,11 @@ public class Main {
 				}
 
 				loadSaveWithErrorCheck("latest");
+
 				System.out.println("");
 
 				if (!Tools.Files.readFromFile(PATH + "\\version.txt").equals(VERSION)) {
-					System.out.println("B lackjack has been updated.");
+					System.out.println("Blackjack has been updated.");
 					if (Tools.Console.askBoolean("Would you like to load defaults?", true)) {
 						saveToDefault();
 					}
@@ -798,6 +857,7 @@ public class Main {
 				System.out.println("Welcome to Blackjack!");
 				if (Tools.Console.askBoolean("Would you like to hear the rules?", true))
 					game.printDescription();
+
 				System.out.println("Okay! Let's go!");
 				System.out.println("");
 
@@ -826,12 +886,27 @@ public class Main {
 						add("view licenses");
 					}
 				};
-
+				lastSave = getCurrentSave();
+				Runtime.getRuntime().addShutdownHook(new Thread() {
+					public void run() {
+						// System.out.println("Shutdown hook...");
+						// System.out.println(getCurrentSave().toJSONString() + ", " +
+						// lastSave.toJSONString() + ", " + getCurrentSave().equals(lastSave));
+						if (!getCurrentSave().equals(lastSave)) {
+							if (Tools.Console.askBoolean(
+									"Changes you made will not be saved. Would you like to save your changes now?",
+									true)) {
+								saveTo("latest", getCurrentSave());
+							}
+						}
+					}
+				});
 				loop: while (true) {
 					game.setMaxHits(maxHits);
-					if (autoSave) {
+					if (autoSave && !getCurrentSave().equals(lastSave)) {
 						System.out.println("Auto save is on! Saving to \"latest.json\"...");
 						saveTo("latest", getCurrentSave());
+						System.out.println("");
 					}
 
 					for (CardPlayer i : game.getPlayers()) {
@@ -842,10 +917,9 @@ public class Main {
 						}
 					}
 
-					String choice = Tools.Console
-							.askSelection("Command Choices", choices, true,
-									"What would you like to do (\"help\" for choices)?", null, true, false, false)
-							.toLowerCase();
+					System.out.println("Type a command. Type \"help\" to get your choices");
+					String choice = Tools.Console.askSelection("Command Choices", choices, true, "Blackjack>", null,
+							true, false, false);
 					System.out.println("");
 					switch (choice) {
 					case "play":
@@ -888,7 +962,7 @@ public class Main {
 						System.out.println("bet reset - Resets all players' bets.");
 						System.out.println("save latest - save the current data to the latest save.");
 						System.out.println(
-								"auto save enable - enable auto save. The computer will save after every change made.");
+								"auto save enable - enable auto save. The computer will save every time you re-enter the main Blackjack console.");
 						System.out.println("auto save disable - disable auto save. You will need to save manually.");
 						System.out.println(
 								"save as - save as a new save file that you can restore from with the load command");
@@ -917,16 +991,7 @@ public class Main {
 						playerSetup();
 						break;
 					case "bet setup":
-						ArrayList<String> choices1 = new ArrayList<String>() {
-							{
-								add("automatic");
-								add("manual");
-							}
-						};
-						if (Tools.Console
-								.askSelection("Choices", choices1, true,
-										"Would you like to use automatic or manual mode?", "CANCEL", true, false, false)
-								.equalsIgnoreCase("automatic")) {
+						if (Tools.Console.askBoolean("Would you like to use automatic mode?", true)) {
 							game.makeBets(minBet, maxBet, minAIBet, maxAIBet);
 						} else {
 							betSetup();
