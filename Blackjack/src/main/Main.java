@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -772,9 +774,9 @@ public class Main {
 		if (!(DEBUG_MODE)) {
 			Console console = System.console();
 			if (console == null && !GraphicsEnvironment.isHeadless()) {
-				String filename = Main.class.getProtectionDomain().getCodeSource().getLocation().toString()
-						.substring(6);
+				URI uri = null;
 				try {
+					uri = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
 					File batch = new File(LAUNCHER_PATH);
 					Tools.Files.deleteFile(batch);
 					File parent = batch.getParentFile();
@@ -784,12 +786,12 @@ public class Main {
 					batch.createNewFile();
 					PrintWriter writer = new PrintWriter(batch);
 					writer.println("@echo off");
-					writer.println("java -jar \"" + filename.replaceAll("%20", " ") + "\"");
+					writer.println("java -jar \"" + Paths.get(uri) + "\"");
 					// writer.println("exit");
 					writer.flush();
 					writer.close();
 					Runtime.getRuntime().exec("cmd /c start \"\" \"" + batch.getPath() + "\"");
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				cont = false;
