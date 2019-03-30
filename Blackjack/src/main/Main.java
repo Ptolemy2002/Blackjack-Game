@@ -784,7 +784,7 @@ public class Main {
 					batch.createNewFile();
 					PrintWriter writer = new PrintWriter(batch);
 					writer.println("@echo off");
-					writer.println("java -jar \"" + filename.replace("%20", " ") + "\"");
+					writer.println("java -jar \"" + filename.replaceAll("%20", " ") + "\"");
 					// writer.println("exit");
 					writer.flush();
 					writer.close();
