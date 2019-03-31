@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -157,7 +158,7 @@ public class Tools {
 					lastChar = i.charAt(i.length() - 1);
 					if (lastChar == '}' || lastChar == ']') {
 						tabs--;
-					}  else if (lastChar == ',') {
+					} else if (lastChar == ',') {
 						lastChar = i.charAt(i.length() - 2);
 						if (lastChar == '}' || lastChar == ']') {
 							tabs--;
@@ -356,6 +357,117 @@ public class Tools {
 				e.printStackTrace();
 				return false;
 			}
+		}
+		
+		/**
+		 * Copy files from the source path to the destination path. Works with directories also.
+		 * 
+		 * @param sourcePath the source file or directory
+		 * @param destinationPath the file or directory to dump it into
+		 * @return true if the operation was successful, false if error.
+		 */
+		public static boolean copyFiles(File sourceLocation, File targetLocation) {
+			try {
+				if (sourceLocation.isDirectory()) {
+					if (!sourceLocation.exists() && !sourceLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + sourceLocation);
+					}
+
+					if (!targetLocation.exists() && !targetLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + targetLocation);
+					}
+
+					String[] children = sourceLocation.list();
+					for (int i = 0; i < children.length; i++) {
+						copyFiles(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+					}
+				} else {
+					File parent = sourceLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					parent = targetLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					InputStream in = new FileInputStream(sourceLocation);
+					OutputStream out = new FileOutputStream(targetLocation);
+
+					// Copy the bits from instream to outstream
+					byte[] buf = new byte[1024];
+					int len;
+					while ((len = in.read(buf)) > 0) {
+						out.write(buf, 0, len);
+					}
+					in.close();
+					out.close();
+				}
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		
+		/**
+		 * Copy files from the source path to the destination path. Works with directories also.
+		 * 
+		 * @param sourcePath the source path of the file or directory
+		 * @param destinationPath the file or directory to dump it into
+		 * @return true if the operation was successful, false if error.
+		 */
+		public static boolean copyFiles(String sourcePath, String destinationPath) {
+			try {
+				File sourceLocation = new File(sourcePath);
+				File targetLocation = new File(destinationPath);
+				if (sourceLocation.isDirectory()) {
+					if (!sourceLocation.exists() && !sourceLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + sourceLocation);
+					}
+
+					if (!targetLocation.exists() && !targetLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + targetLocation);
+					}
+
+					String[] children = sourceLocation.list();
+					for (int i = 0; i < children.length; i++) {
+						copyFiles(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+					}
+				} else {
+					File parent = sourceLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					parent = targetLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					InputStream in = new FileInputStream(sourceLocation);
+					OutputStream out = new FileOutputStream(targetLocation);
+
+					// Copy the bits from instream to outstream
+					byte[] buf = new byte[1024];
+					int len;
+					while ((len = in.read(buf)) > 0) {
+						out.write(buf, 0, len);
+					}
+					in.close();
+					out.close();
+				}
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+
 		}
 
 		/**

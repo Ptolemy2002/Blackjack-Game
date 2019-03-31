@@ -783,10 +783,11 @@ public class Main {
 					if (!parent.exists() && !parent.mkdirs()) {
 						throw new IOException("Couldn't create dir: " + parent);
 					}
+					String fileName = Paths.get(uri).toString();
 					batch.createNewFile();
 					PrintWriter writer = new PrintWriter(batch);
 					writer.println("@echo off");
-					writer.println("java -jar \"" + Paths.get(uri) + "\"");
+					writer.println("java -jar \"" + fileName + "\"");
 					// writer.println("exit");
 					writer.flush();
 					writer.close();
