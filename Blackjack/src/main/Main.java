@@ -181,6 +181,8 @@ public class Main {
 				add("quit");
 				add("help");
 				add("view players");
+				add("reset");
+				add("reset all");
 			}
 		};
 		System.out.println("Welcome to the Blackjack bet setup console!");
@@ -198,9 +200,19 @@ public class Main {
 				System.out.println("help - view this list");
 				System.out.println("view players - view all the players");
 				System.out.println("quit - return to the main Blackjack console");
+				System.out.println(
+						"reset - reset the bet for a specific player. The player will be asked to make another bet at the start of the next game.");
+				System.out.println(
+						"reset all - reset the bet for all players. Players will be asked to make another bet at the start of the next game.");
 				break;
 			case "quit":
 				break loop;
+			case "reset all":
+				for (CardPlayer i : game.getPlayers()) {
+					i.setBet(0.0);
+					System.out.println("Reset " + i.getName() + "'s bet!");
+				}
+				break;
 			case "view players":
 				if (game.getPlayers().isEmpty()) {
 					System.out.println("There are no players registered.");
@@ -242,7 +254,10 @@ public class Main {
 					case "view bet":
 						System.out.println(player.getName() + "'s bet is $" + player.getBet());
 						break;
-
+					case "reset":
+						player.setBet(0.0);
+						System.out.println("Reset " + player.getName() + "'s bet!");
+						break;
 					}
 				}
 				break;
@@ -873,7 +888,6 @@ public class Main {
 						add("help");
 						add("rules");
 						add("bet setup");
-						add("bet reset");
 						add("save latest");
 						add("auto save enable");
 						add("auto save disable");
@@ -998,12 +1012,6 @@ public class Main {
 							game.makeBets(minBet, maxBet, minAIBet, maxAIBet);
 						} else {
 							betSetup();
-						}
-						break;
-					case "bet reset":
-						for (CardPlayer i : game.getPlayers()) {
-							i.setBet(0.0);
-							System.out.println("Reset " + i.toString() + "'s bet!");
 						}
 						break;
 					case "auto save enable":
