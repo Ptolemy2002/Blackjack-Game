@@ -44,7 +44,7 @@ public class Main {
 	/**
 	 * This should be true if running in eclipse, but false otherwise.
 	 */
-	public static final boolean DEBUG_MODE = false;
+	public static final boolean DEBUG_MODE = true;
 
 	public static Double minBet = 2.0;
 	public static Double maxBet = 500.0;
@@ -70,7 +70,8 @@ public class Main {
 					"Licenses now work in debug mode.", "The save file is now formatted for better json reading." },
 			{ "Began beta for 2.0 update, which wil include a user interface update",
 					"Redesigned interface for \"bet setup\" command.",
-					"The game will now warn you of unsaved changes before shutdown." } };
+					"The game will now warn you of unsaved changes before shutdown." },
+			{ "The game will now detect incorrect shutdowns and warn you next time you start the game." } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -78,6 +79,7 @@ public class Main {
 			add("1.1.1");
 			add("1.1.2");
 			add("beta 2.0-1");
+			add("beta 2.0-2");
 		}
 	};
 
@@ -872,6 +874,14 @@ public class Main {
 				}
 
 				Tools.Files.writeToFile(PATH + "\\version.txt", VERSION);
+
+				if (Tools.Files.readFromFile(PATH + "\\shutdown type.txt").equalsIgnoreCase("incorrect")) {
+					System.out.println("You shutdown incorrectly last time, and may have lost some data!");
+					System.out.println("Next time, use the \"quit\" command to shut down.");
+					System.out.println("");
+				}
+				Tools.Files.writeToFile(PATH + "\\shutdown type.txt", "incorrect");
+
 				System.out.println("Welcome to Blackjack!");
 				if (Tools.Console.askBoolean("Would you like to hear the rules?", true))
 					game.printDescription();
@@ -916,8 +926,10 @@ public class Main {
 								saveTo("latest", getCurrentSave());
 							}
 						}
+						Tools.Files.writeToFile(PATH + "\\shutdown type.txt", "correct");
 					}
 				});
+
 				loop: while (true) {
 					game.setMaxHits(maxHits);
 					if (autoSave && !getCurrentSave().equals(lastSave)) {
@@ -970,12 +982,11 @@ public class Main {
 						System.out.println(
 								"By default there is one player called \"Player 1\" and one AI called \"Player 2\", and they both have $500");
 						System.out.println("bet setup - This command allows you to override the bet of any player.");
-						System.out.println(
-								"Set a player's bet to 0 if you would like them to choose at the beginning of a game.");
 						System.out.println("properties - edit some global propeerties of the game.");
 						System.out.println("rules - read the rules again.");
 						System.out.println("help - show this list.");
-						System.out.println("quit - end the program.");
+						System.out.println(
+								"quit - end the program. Please use this instead of ending the process itself to be sure you don't lose data.");
 						System.out.println("bet reset - Resets all players' bets.");
 						System.out.println("save latest - save the current data to the latest save.");
 						System.out.println(
