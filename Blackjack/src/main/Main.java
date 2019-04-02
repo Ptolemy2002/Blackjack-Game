@@ -739,7 +739,7 @@ public class Main {
 				System.out.println("insert card - insert a card at a specific index of a deck");
 				System.out.println("remove card - remove a card from a deck");
 				System.out.println("append deck - append the content of a deck to another deck");
-				System.out.println("quit - returen to the main console");
+				System.out.println("quit - return to the main console");
 				System.out.println("help - show this ist");
 				break;
 			case "create deck":
