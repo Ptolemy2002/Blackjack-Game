@@ -97,6 +97,11 @@ public class Tools {
 			if (i == 1) {
 				return s.charAt(i - 1) == '\\';
 			}
+			/*if (s.charAt(i) == '[') {
+				System.out.println(s.charAt(i - 1));
+				System.out.println(s.charAt(i - 2));
+				System.out.println(s.charAt(i - 1) == '\\' && !(s.charAt(i - 2) == '\\'));
+			}*/
 			return s.charAt(i - 1) == '\\' && !(s.charAt(i - 2) == '\\');
 		}
 
@@ -125,6 +130,7 @@ public class Tools {
 				if (endIgnoreChar == null) {
 					for (String[] ignoreChar : ignoreChars) {
 						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i)) {
+							//System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
 							ignore = true;
 							endIgnoreChar = ignoreChar[1];
 							break;
