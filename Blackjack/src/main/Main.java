@@ -84,6 +84,7 @@ public class Main {
 	};
 
 	public static JSONObject lastSave = null;
+	public static JSONObject lastDecks = null;
 
 	public static void testToString() {
 		while (true) {
@@ -394,12 +395,30 @@ public class Main {
 			if (Tools.Files.writeToFile(PATH + "\\decks.json",
 					Tools.Strings.prettyPrintJSON(decksSave.toJSONString()))) {
 				System.out.println("Successfully saved the decks.");
+				lastDecks = decksSave;
 			} else {
 				System.out.println("There was an error writing to the file \"" + PATH + "\\decks.json" + "\"");
 			}
 
 		}
 
+	}
+	
+	public static JSONObject getDecksJSON() {
+		JSONObject res = new JSONObject();
+		for (String i : decks.keySet()) {
+			JSONArray cards = new JSONArray();
+			for (Card j : decks.get(i).getCards()) {
+				JSONArray card = new JSONArray();
+				card.add(j.number.toString());
+				card.add(j.suit.toString());
+				card.add(j.faceUp);
+				cards.add(card);
+			}
+			res.put(i, cards);
+		}
+		
+		return res;
 	}
 
 	public static void loadDecks() {
@@ -686,47 +705,82 @@ public class Main {
 	}
 
 	public static void deckEdit() {
-		if (Tools.Console.askBoolean("Would you like to create a new deck?", true)) {
-			String name = Tools.Console.ask("What is the name of the new deck?", true,
-					x -> !x.equals("standard") && !decks.containsKey(x), "Cannot be standard or already existing!");
-			decks.put(name, new Deck(new Card[] {}));
-			System.out.println("Created an empty deck.");
-		} else if (Tools.Console.askBoolean("Would you like to delete a deck?", true)) {
-			String d = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()), true,
-					"Choose a deck to edit.", "CANCEL", true, true, true, false);
-			if (d != null) {
-				decks.remove(d);
-				System.out.println("Removed the deck.");
+		ArrayList<String> choices = new ArrayList<String>() {
+			{
+				add("create deck");
+				add("delete deck");
+				add("view deck");
+				add("add card");
+				add("insert card");
+				add("remove card");
+				add("append deck");
+				add("quit");
+				add("help");
+				add("show decks");
+				add("set deck");
 			}
-		} else {
-			String choice = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()), true,
-					"Choose a deck to edit.", "CANCEL", true, true, true, false);
+		};
 
-			if (choice != null) {
-				Deck d = decks.get(choice);
-				if (Tools.Console.askBoolean("Would you like to show the contents of this deck?", true)) {
-					// Put all cards face up so that user can view them.
-					Deck shownDeck = new Deck(d);
-					for (Card i : shownDeck.getCards()) {
-						i.setFaceUp(true);
-					}
-					Tools.Console.printList(choice, shownDeck.getCards(), true, 10, 5, "CANCEL");
+		System.out.println("Welcome to the deck edit console!");
+		loop: while (true) {
+			String choice = Tools.Console.askSelection("Decks", choices, true, "Blackjack\\deck edit>", "CANCEL", true,
+					true, false, false);
+			System.out.println("");
+			switch (choice) {
+			case "quit":
+				break loop;
+			case "help":
+				System.out.println("create deck - create a new empty deck");
+				System.out.println("delete deck - delete a deck");
+				System.out.println("view deck - view the contents of a deck");
+				System.out.println("show decks - show all the decks that are registered");
+				System.out.println("set deck - set the deck that the game will use");
+				System.out.println("add card - add a card to a deck");
+				System.out.println("insert card - insert a card at a specific index of a deck");
+				System.out.println("remove card - remove a card from a deck");
+				System.out.println("append deck - append the content of a deck to another deck");
+				System.out.println("quit - returen to the main console");
+				System.out.println("help - show this ist");
+				break;
+			case "create deck":
+				String name = Tools.Console.ask("What is the name of the new deck?", true,
+						x -> !x.equals("standard") && !decks.containsKey(x), "Cannot be standard or already existing!");
+				decks.put(name, new Deck(new Card[] {}));
+				System.out.println("Created an empty deck.");
+				break;
+			case "delete deck":
+				String d = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()), true,
+						"Choose a deck to edit.", "CANCEL", true, true, true, false);
+				if (d != null) {
+					decks.remove(d);
+					System.out.println("Removed the deck.");
 				}
-
-				ArrayList<String> choices = new ArrayList<String>() {
-					{
-						add("add");
-						add("remove");
-						add("append");
-						add("delete deck");
-						add("append deck");
-					}
-				};
-				String choice1 = Tools.Console.askSelection("Choices", choices, true, "Choose an action to perform.",
-						"CANCEL", true, true, true, false);
-				if (choice1 != null) {
-					switch (choice1) {
-					case "add":
+				break;
+			case "show decks":
+				Tools.Console.printList("Decks", new ArrayList<String>(decks.keySet()), true);
+				break;
+			case "set deck":
+				String choice2 = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()), true,
+						"Choose the deck to use.", "CANCEL", true, true, true);
+				currentDeck = choice2;
+				deck = decks.get(choice2);
+				System.out.println("Successfully changed the deck.");
+				break;
+			default:
+				String d1 = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()), true,
+						"Choose a deck to perform the operation on.", "CANCEL", true, true, true, false);
+				Deck deckChoice = decks.get(choice);
+				if (deckChoice != null) {
+					switch (choice) {
+					case "view deck":
+						// Put all cards face up so that user can view them.
+						Deck shownDeck = new Deck(deckChoice);
+						for (Card i : shownDeck.getCards()) {
+							i.setFaceUp(true);
+						}
+						Tools.Console.printList(d1, shownDeck.getCards(), true, 10, 5, "CANCEL");
+						break;
+					case "insert card":
 						EnumCardSuit suit = Tools.Console.askSelection("Suits", EnumCardSuit.getValues(), true,
 								"Choose a suit for your card.", "CANCEL", true, true, true);
 						if (suit != null) {
@@ -734,47 +788,51 @@ public class Main {
 									true, "Choose a number for your card.", "CANCEL", true, true, true);
 							if (number != null) {
 								Integer index = Tools.Console.askInt("Choose an index to put your card in.", true,
-										x -> x >= Math.min(d.getCards().size(), 1) && x <= d.getCards().size(),
-										"Minimun value is 1. Maximum value is " + d.getCards().size());
-								d.putCardAt(new Card(number, suit, true), index);
+										x -> x >= Math.min(deckChoice.getCards().size(), 1)
+												&& x <= deckChoice.getCards().size(),
+										"Minimun value is 1. Maximum value is " + deckChoice.getCards().size());
+								deckChoice.putCardAt(new Card(number, suit, true), index);
 							}
 						}
 						break;
-					case "append":
+					case "add card":
 						EnumCardSuit suit1 = Tools.Console.askSelection("Suits", EnumCardSuit.getValues(), true,
 								"Choose a suit for your card.", "CANCEL", true, true, true);
 						if (suit1 != null) {
 							EnumCardNumber number = Tools.Console.askSelection("Numbers", EnumCardNumber.getValues(),
 									true, "Choose a number for your card.", "CANCEL", true, true, true);
 							if (number != null) {
-								d.putCardAtBottom(new Card(number, suit1, true));
+								deckChoice.putCardAtBottom(new Card(number, suit1, true));
 							}
 						}
 						break;
-					case "remove":
+					case "remove card":
 						Integer index = Tools.Console.askInt("Choose an index to put your card in.", true,
-								x -> x >= 1 && x <= d.getCards().size(),
-								"Minimun value is 1. Maximum value is " + d.getCards().size()) - 1;
-						d.removeCard(index);
+								x -> x >= 1 && x <= deckChoice.getCards().size(),
+								"Minimun value is 1. Maximum value is " + deckChoice.getCards().size()) - 1;
+						deckChoice.removeCard(index);
+						break;
 					case "append deck":
 						ArrayList<String> deckKeys = new ArrayList<String>(decks.keySet());
-						deckKeys.remove(choice);
+						deckKeys.remove(d1);
 						deckKeys.add("standard");
-						String choice2 = Tools.Console.askSelection("Decks", deckKeys, true, "Choose a deck to append.",
+						String choice3 = Tools.Console.askSelection("Decks", deckKeys, true, "Choose a deck to append.",
 								"CANCEL", true, true, true, false);
-						if (choice2 != null) {
-							if (!choice2.equals("standard")) {
-								d.appendDeck(decks.get(choice2));
+						if (choice3 != null) {
+							if (!choice3.equals("standard")) {
+								deckChoice.appendDeck(decks.get(choice3));
 							} else {
-								d.appendDeck(Deck.STANDARD_52);
+								deckChoice.appendDeck(Deck.STANDARD_52);
 							}
 						}
 						break;
 					}
-				}
 
+				}
 			}
+			System.out.println("");
 		}
+
 	}
 
 	public static void printPatchNotes(String version) {
@@ -906,7 +964,6 @@ public class Main {
 						add("load file");
 						add("delete save");
 						add("deck edit");
-						add("set deck");
 						add("deck standard");
 						add("restore defaults");
 						add("patch notes");
@@ -919,7 +976,7 @@ public class Main {
 						// System.out.println("Shutdown hook...");
 						// System.out.println(getCurrentSave().toJSONString() + ", " +
 						// lastSave.toJSONString() + ", " + getCurrentSave().equals(lastSave));
-						if (!getCurrentSave().equals(lastSave)) {
+						if (!getCurrentSave().equals(lastSave) || !getDecksJSON().equals(lastDecks)) {
 							if (Tools.Console.askBoolean(
 									"Changes you made will not be saved. Would you like to save your changes now?",
 									true)) {
@@ -932,7 +989,7 @@ public class Main {
 
 				loop: while (true) {
 					game.setMaxHits(maxHits);
-					if (autoSave && !getCurrentSave().equals(lastSave)) {
+					if (autoSave && (!getCurrentSave().equals(lastSave) || !getDecksJSON().equals(lastDecks))) {
 						System.out.println("Auto save is on! Saving to \"latest.json\"...");
 						saveTo("latest", getCurrentSave());
 						System.out.println("");
@@ -980,14 +1037,13 @@ public class Main {
 						System.out.println(
 								"player setup - This command allows you to register, edit, and remove players. You can add an AI or a user. You can also edit the money a player has.");
 						System.out.println(
-								"By default there is one player called \"Player 1\" and one AI called \"Player 2\", and they both have $500");
+								"By default there is one player called \"Player 1\" and one AI called \"Computer\", and they both have $500");
 						System.out.println("bet setup - This command allows you to override the bet of any player.");
 						System.out.println("properties - edit some global propeerties of the game.");
 						System.out.println("rules - read the rules again.");
 						System.out.println("help - show this list.");
 						System.out.println(
 								"quit - end the program. Please use this instead of ending the process itself to be sure you don't lose data.");
-						System.out.println("bet reset - Resets all players' bets.");
 						System.out.println("save latest - save the current data to the latest save.");
 						System.out.println(
 								"auto save enable - enable auto save. The computer will save every time you re-enter the main Blackjack console.");
@@ -998,8 +1054,6 @@ public class Main {
 						System.out.println("delete save - delete a save from the file system");
 						System.out.println(
 								"deck edit - create deck presets and edit the deck that will be used during the game.");
-						System.out.println(
-								"set deck - set the current deck to be used. Must have length of at least 10.");
 						System.out.println("deck standard - load the standard deck.");
 						System.out.println(
 								"restore defaults - will delete the latest save file and restore default settings.");
@@ -1070,13 +1124,6 @@ public class Main {
 						break;
 					case "deck edit":
 						deckEdit();
-						break;
-					case "set deck":
-						String choice2 = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()),
-								true, "Choose the deck to use.", "CANCEL", true, true, true);
-						currentDeck = choice2;
-						deck = decks.get(choice2);
-						System.out.println("Successfully changed the deck.");
 						break;
 					case "deck standard":
 						currentDeck = "standard";
