@@ -83,6 +83,24 @@ public class Tools {
 		}
 
 		/**
+		 * Tests if the character at the specified index of the specified string is
+		 * escaped. That is, it is preceded by a "\", and not two "\"s.
+		 * 
+		 * @param s the string
+		 * @param i the index
+		 * @return whether the character is escaped
+		 */
+		public static boolean isEscaped(String s, int i) {
+			if (i <= 0) {
+				return false;
+			}
+			if (i == 1) {
+				return s.charAt(i - 1) == '\\';
+			}
+			return s.charAt(i - 1) == '\\' && !(s.charAt(i - 2) == '\\');
+		}
+
+		/**
 		 * Replace the specified segment with the specified replacement unless the
 		 * segment is wrapped in one of the specified ignreChar sets.
 		 * 
@@ -101,28 +119,25 @@ public class Tools {
 		public static String replace(String target, String segment, String replacement, String[]... ignoreChars) {
 			String res = "";
 			boolean ignore = false;
+			String endIgnoreChar = null;
 
 			for (int i = 0; i < target.length(); i++) {
-				for (String[] ignoreChar : ignoreChars) {
-					if (!ignoreChar[0].equals(ignoreChar[1])) {
-						if (segment(target, ignoreChar[0], i)) {
+				if (endIgnoreChar == null) {
+					for (String[] ignoreChar : ignoreChars) {
+						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i)) {
 							ignore = true;
-							break;
-						} else if (segment(target, ignoreChar[1], i)) {
-							ignore = false;
-						}
-					} else {
-						if (segment(target, ignoreChar[0], i)) {
-							ignore = !ignore;
+							endIgnoreChar = ignoreChar[1];
 							break;
 						}
 					}
-
+				} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i)) {
+					ignore = false;
+					endIgnoreChar = null;
 				}
 
 				if (!ignore && segment(target, segment, i)) {
 					res += replacement;
-					i += replacement.length() - 2;
+					i += segment.length() - 1;
 				} else {
 					res += target.charAt(i);
 				}
@@ -146,6 +161,7 @@ public class Tools {
 			res1 = replace(res1, "}", "\n}", new String[] { "\"", "\"" });
 			res1 = replace(res1, "]", "\n]", new String[] { "\"", "\"" });
 			res1 = replace(res1, ",", ",\n", new String[] { "\"", "\"" });
+			res1 = replace(res1, ":", ": ", new String[] { "\"", "\"" });
 
 			// Insert tabs
 			String res2 = "{\n";
@@ -358,11 +374,12 @@ public class Tools {
 				return false;
 			}
 		}
-		
+
 		/**
-		 * Copy files from the source path to the destination path. Works with directories also.
+		 * Copy files from the source path to the destination path. Works with
+		 * directories also.
 		 * 
-		 * @param sourcePath the source file or directory
+		 * @param sourcePath      the source file or directory
 		 * @param destinationPath the file or directory to dump it into
 		 * @return true if the operation was successful, false if error.
 		 */
@@ -412,11 +429,12 @@ public class Tools {
 				return false;
 			}
 		}
-		
+
 		/**
-		 * Copy files from the source path to the destination path. Works with directories also.
+		 * Copy files from the source path to the destination path. Works with
+		 * directories also.
 		 * 
-		 * @param sourcePath the source path of the file or directory
+		 * @param sourcePath      the source path of the file or directory
 		 * @param destinationPath the file or directory to dump it into
 		 * @return true if the operation was successful, false if error.
 		 */
