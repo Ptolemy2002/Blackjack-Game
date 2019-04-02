@@ -61,7 +61,7 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
-	public static final String VERSION = "beta 2.0-2";
+	public static final String VERSION = "beta 2.0-3";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
 			{ "You can now convert ai players to normal and normal players to ai without data loss.",
@@ -71,7 +71,8 @@ public class Main {
 			{ "Began beta for 2.0 update, which wil include a user interface update",
 					"Redesigned interface for \"bet setup\" command.",
 					"The game will now warn you of unsaved changes before shutdown." },
-			{ "The game will now detect incorrect shutdowns and warn you next time you start the game." } };
+			{ "The game will now detect incorrect shutdowns and warn you next time you start the game." },
+			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -80,6 +81,7 @@ public class Main {
 			add("1.1.2");
 			add("beta 2.0-1");
 			add("beta 2.0-2");
+			add("beta 2.0-3");
 		}
 	};
 
@@ -403,7 +405,7 @@ public class Main {
 		}
 
 	}
-	
+
 	public static JSONObject getDecksJSON() {
 		JSONObject res = new JSONObject();
 		for (String i : decks.keySet()) {
@@ -417,7 +419,7 @@ public class Main {
 			}
 			res.put(i, cards);
 		}
-		
+
 		return res;
 	}
 
