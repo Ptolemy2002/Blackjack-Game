@@ -123,25 +123,40 @@ public class Tools {
 		 */
 		public static String replace(String target, String segment, String replacement, String[]... ignoreChars) {
 			String res = "";
-			boolean ignore = false;
+			int ignoreCount = 0;
+			String startIgnoreChar = null;
 			String endIgnoreChar = null;
 
 			for (int i = 0; i < target.length(); i++) {
-				if (endIgnoreChar == null) {
+				if (startIgnoreChar == null) {
 					for (String[] ignoreChar : ignoreChars) {
 						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i)) {
 							//System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
-							ignore = true;
+							ignoreCount ++;
+							startIgnoreChar = ignoreChar[0];
 							endIgnoreChar = ignoreChar[1];
 							break;
 						}
 					}
-				} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i)) {
-					ignore = false;
+				} else if (startIgnoreChar.equals(endIgnoreChar)) {
+					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i)) {
+						ignoreCount --;
+					}
+				} else {
+					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i)) {
+						ignoreCount ++;
+					} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i)) {
+						ignoreCount --;
+					}
+				}
+				
+				if (ignoreCount <= 0) {
+					ignoreCount = 0;
+					startIgnoreChar = null;
 					endIgnoreChar = null;
 				}
 
-				if (!ignore && segment(target, segment, i)) {
+				if (ignoreCount <= 0 && segment(target, segment, i)) {
 					res += replacement;
 					i += segment.length() - 1;
 				} else {
