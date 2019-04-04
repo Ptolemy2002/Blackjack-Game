@@ -61,7 +61,7 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
-	public static final String VERSION = "beta 2.0-3";
+	public static final String VERSION = "beta 2.0-4";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
 			{ "You can now convert ai players to normal and normal players to ai without data loss.",
@@ -72,7 +72,8 @@ public class Main {
 					"Redesigned interface for \"bet setup\" command.",
 					"The game will now warn you of unsaved changes before shutdown." },
 			{ "The game will now detect incorrect shutdowns and warn you next time you start the game." },
-			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" } };
+			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" },
+			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -82,27 +83,12 @@ public class Main {
 			add("beta 2.0-1");
 			add("beta 2.0-2");
 			add("beta 2.0-3");
+			add("beta 2.0-4");
 		}
 	};
 
 	public static JSONObject lastSave = null;
 	public static JSONObject lastDecks = null;
-
-	public static void testToString() {
-		while (true) {
-			if (Tools.Console.askBoolean("Would you like to cancel the toString test?", true))
-				break;
-
-			EnumCardNumber number = Tools.Console.askSelection("Card Numbers", EnumCardNumber.getValues(), true,
-					"CANCEL", true, true, true);
-			EnumCardSuit type = Tools.Console.askSelection("Card Types", EnumCardSuit.getValues(), true, "CANCEL", true,
-					true, true);
-
-			if (!(number == null || type == null)) {
-				System.out.println(new Card(number, type).toString());
-			}
-		}
-	}
 
 	public static void properties() {
 		ArrayList<String> properties = new ArrayList<String>() {
@@ -273,29 +259,49 @@ public class Main {
 
 	public static void playerSetup() {
 		ArrayList<CardPlayer> players = (ArrayList<CardPlayer>) game.getPlayers().clone();
-		if (players.isEmpty()) {
-			System.out.println("There are no players registered.");
-		} else {
-			if (Tools.Console.askBoolean(
-					"There are " + players.size() + " players registered. Would you like to view the players?", true)) {
-				Tools.Console.printList(players, true);
-			}
-		}
 
 		ArrayList<String> choices = new ArrayList<String>() {
 			{
 				add("add");
+				add("remove");
+				add("edit");
+				add("convert");
+				add("help");
+				add("quit");
+				add("view");
 			}
 		};
-		if (!players.isEmpty()) {
-			choices.add("remove");
-			choices.add("edit");
-		}
 
-		String choice = Tools.Console.askSelection("Actions", choices, true,
-				"Choose an action (or the index of that action)", "CANCEL", true, true, true);
-		if (choice != null) {
+		System.out.println("Welcome to the player setup console!");
+		System.out.println("Type a command. Type \"help\" to get your choices");
+
+		loop: while (true) {
+			String choice = Tools.Console.askSelection("Actions", choices, true, "Blackjack\\player setup>", null, true,
+					false, false);
+			System.out.println("");
 			switch (choice) {
+			case "view":
+				if (players.isEmpty()) {
+					System.out.println("There are no players registered.");
+				} else {
+					if (Tools.Console.askBoolean(
+							"There are " + players.size() + " players registered. Would you like to view the players?",
+							true)) {
+						Tools.Console.printList(players, true);
+					}
+				}
+				break;
+			case "quit":
+				break loop;
+			case "help":
+				System.out.println("add - add a player");
+				System.out.println("remove - remove a player");
+				System.out.println("edit - edit a player");
+				System.out.println("view - view all registered players");
+				System.out.println("convert - convert a player from normal to AI or AI to normal.");
+				System.out.println("help - view this list");
+				System.out.println("quit - return to the main Blackjack console.");
+				break;
 			case "add":
 				CardPlayer player = game
 						.addNewPlayer(Tools.Console.askBoolean("Would you like your player to be an AI?", true));
@@ -339,23 +345,25 @@ public class Main {
 					}
 
 				}
-				if (player1.isAI()) {
-					if (Tools.Console.askBoolean("Would you like to convert this player to a normal player?", true)) {
-						game.getPlayers().add(players.indexOf(player1),
-								new BlackjackPlayer(game, game.getPlayers().size() + 1).setMoney(player1.getMoney())
-										.setBet(player1.getBet()).setName(player1.getName()));
-						game.getPlayers().remove(player1);
-					}
+				break;
+			case "convert":
+				CardPlayer player2 = Tools.Console.askSelection("Players", players, true, "Pick a player", "CANCEL",
+						true, true, true);
+				if (player2.isAI()) {
+					game.getPlayers().add(players.indexOf(player2),
+							new BlackjackPlayer(game, game.getPlayers().size() + 1).setMoney(player2.getMoney())
+									.setBet(player2.getBet()).setName(player2.getName()));
+					game.getPlayers().remove(player2);
 				} else {
-					if (Tools.Console.askBoolean("Would you like to convert this player to an ai player?", true)) {
-						game.getPlayers().add(players.indexOf(player1),
-								new BlackjackPlayerAI(game, game.getPlayers().size() + 1).setMoney(player1.getMoney())
-										.setBet(player1.getBet()).setName(player1.getName()));
-						game.getPlayers().remove(player1);
-					}
+					game.getPlayers().add(players.indexOf(player2),
+							new BlackjackPlayerAI(game, game.getPlayers().size() + 1).setMoney(player2.getMoney())
+									.setBet(player2.getBet()).setName(player2.getName()));
+					game.getPlayers().remove(player2);
 				}
+				System.out.println("Your player has been converted!");
 				break;
 			}
+			System.out.println("");
 		}
 	}
 
