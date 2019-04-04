@@ -90,19 +90,29 @@ public class Tools {
 		 * @param i the index
 		 * @return whether the character is escaped
 		 */
-		public static boolean isEscaped(String s, int i) {
+		public static boolean isEscaped(String s, int i, String escapeChar) {
 			if (i <= 0) {
 				return false;
 			}
-			if (i == 1) {
-				return s.charAt(i - 1) == '\\';
+			if (i > s.length() - 1) {
+				return false;
 			}
-			/*if (s.charAt(i) == '[') {
-				System.out.println(s.charAt(i - 1));
-				System.out.println(s.charAt(i - 2));
-				System.out.println(s.charAt(i - 1) == '\\' && !(s.charAt(i - 2) == '\\'));
-			}*/
-			return s.charAt(i - 1) == '\\' && !(s.charAt(i - 2) == '\\');
+			if (escapeChar.length() == 0) {
+				return false;
+			}
+			if (i < escapeChar.length()) {
+				return false;
+			}
+			if (i == escapeChar.length()) {
+				return segment(s, escapeChar, 0);
+			}
+			/*
+			 * if (s.charAt(i) == '[') { System.out.println(s.charAt(i - 1));
+			 * System.out.println(s.charAt(i - 2)); System.out.println(s.charAt(i - 1) ==
+			 * '\\' && !(s.charAt(i - 2) == '\\')); }
+			 */
+			return segment(s, escapeChar, i - escapeChar.length())
+					&& !(segment(s, escapeChar, i - (escapeChar.length() * 2)));
 		}
 
 		/**
@@ -112,6 +122,7 @@ public class Tools {
 		 * @param target      the string to replace the segment in
 		 * @param segment     the segment to replace
 		 * @param replacement the string to replace the segment with
+		 * @param escapeChar  the segment that is used to escape an ignoreChar.
 		 * @param ignoreChars the set of ignoreChars. Each item should have a length of
 		 *                    exactly 2, with the start of the encasement at index 0,
 		 *                    and the end at index 1. For example, if you wanted to
@@ -121,7 +132,8 @@ public class Tools {
 		 *         replacement unless the segment is wrapped in one of the specified
 		 *         ignreChar sets.
 		 */
-		public static String replace(String target, String segment, String replacement, String[]... ignoreChars) {
+		public static String replace(String target, String segment, String replacement, String escapeChar,
+				String[]... ignoreChars) {
 			String res = "";
 			int ignoreCount = 0;
 			String startIgnoreChar = null;
@@ -130,26 +142,26 @@ public class Tools {
 			for (int i = 0; i < target.length(); i++) {
 				if (startIgnoreChar == null) {
 					for (String[] ignoreChar : ignoreChars) {
-						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i)) {
-							//System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
-							ignoreCount ++;
+						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i, escapeChar)) {
+							// System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
+							ignoreCount++;
 							startIgnoreChar = ignoreChar[0];
 							endIgnoreChar = ignoreChar[1];
 							break;
 						}
 					}
 				} else if (startIgnoreChar.equals(endIgnoreChar)) {
-					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i)) {
-						ignoreCount --;
+					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
+						ignoreCount--;
 					}
 				} else {
-					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i)) {
-						ignoreCount ++;
-					} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i)) {
-						ignoreCount --;
+					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
+						ignoreCount++;
+					} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
+						ignoreCount--;
 					}
 				}
-				
+
 				if (ignoreCount <= 0) {
 					ignoreCount = 0;
 					startIgnoreChar = null;
@@ -177,12 +189,12 @@ public class Tools {
 			// Add new lines where required
 			json.replace("\n", "");
 			String res1 = json;
-			res1 = replace(res1, "{", "{\n", new String[] { "\"", "\"" });
-			res1 = replace(res1, "[", "[\n", new String[] { "\"", "\"" });
-			res1 = replace(res1, "}", "\n}", new String[] { "\"", "\"" });
-			res1 = replace(res1, "]", "\n]", new String[] { "\"", "\"" });
-			res1 = replace(res1, ",", ",\n", new String[] { "\"", "\"" });
-			res1 = replace(res1, ":", ": ", new String[] { "\"", "\"" });
+			res1 = replace(res1, "{", "{\n", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "[", "[\n", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "}", "\n}", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "]", "\n]", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, ",", ",\n", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, ":", ": ", "\\", new String[] { "\"", "\"" });
 
 			// Insert tabs
 			String res2 = "{\n";
