@@ -62,7 +62,8 @@ public class Tools {
 
 		/**
 		 * Test if the specified segment is present at the specified index of the
-		 * specified target.
+		 * specified target. Will return false if ny type of error occurs, including out
+		 * of bounds errors.
 		 * 
 		 * @param target  the string that should have the segment
 		 * @param segment the segment to test for
@@ -71,15 +72,19 @@ public class Tools {
 		 *         the specified target.
 		 */
 		public static boolean segment(String target, String segment, int index) {
-			for (int i = index; i - index < segment.length(); i++) {
-				Character char1 = target.charAt(i);
-				Character char2 = segment.charAt(i - index);
-				if (!char1.equals(char2)) {
-					return false;
+			try {
+				for (int i = index; i - index < segment.length(); i++) {
+					Character char1 = target.charAt(i);
+					Character char2 = segment.charAt(i - index);
+					if (!char1.equals(char2)) {
+						return false;
+					}
 				}
-			}
 
-			return true;
+				return true;
+			} catch (Exception e) {
+				return false;
+			}
 		}
 
 		/**
@@ -91,26 +96,6 @@ public class Tools {
 		 * @return whether the character is escaped
 		 */
 		public static boolean isEscaped(String s, int i, String escapeChar) {
-			if (i <= 0) {
-				return false;
-			}
-			if (i > s.length() - 1) {
-				return false;
-			}
-			if (escapeChar.length() == 0) {
-				return false;
-			}
-			if (i < escapeChar.length()) {
-				return false;
-			}
-			if (i == escapeChar.length()) {
-				return segment(s, escapeChar, 0);
-			}
-			/*
-			 * if (s.charAt(i) == '[') { System.out.println(s.charAt(i - 1));
-			 * System.out.println(s.charAt(i - 2)); System.out.println(s.charAt(i - 1) ==
-			 * '\\' && !(s.charAt(i - 2) == '\\')); }
-			 */
 			return segment(s, escapeChar, i - escapeChar.length())
 					&& !(segment(s, escapeChar, i - (escapeChar.length() * 2)));
 		}
