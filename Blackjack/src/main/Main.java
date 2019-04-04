@@ -101,7 +101,7 @@ public class Main {
 			}
 		};
 
-		String choice = Tools.Console.askSelection("Properties", properties, true, "Pick a property to edit", "CANCEL",
+		String choice = Tools.Console.askSelection("Properties", properties, true, "Pick a property to view or edit", "CANCEL",
 				true, true, true);
 		if (choice != null) {
 			switch (choice) {
