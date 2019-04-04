@@ -728,6 +728,7 @@ public class Main {
 				add("help");
 				add("show decks");
 				add("set deck");
+				add("deck standard");
 			}
 		};
 
@@ -745,6 +746,7 @@ public class Main {
 				System.out.println("view deck - view the contents of a deck");
 				System.out.println("show decks - show all the decks that are registered");
 				System.out.println("set deck - set the deck that the game will use");
+				System.out.println("deck standard - set the deck to the standard deck for card games.");
 				System.out.println("add card - add a card to a deck");
 				System.out.println("insert card - insert a card at a specific index of a deck");
 				System.out.println("remove card - remove a card from a deck");
@@ -774,6 +776,11 @@ public class Main {
 						"Choose the deck to use.", "CANCEL", true, true, true);
 				currentDeck = choice2;
 				deck = decks.get(choice2);
+				System.out.println("Successfully changed the deck.");
+				break;
+			case "deck standard":
+				currentDeck = "standard";
+				deck = Deck.STANDARD_52;
 				System.out.println("Successfully changed the deck.");
 				break;
 			default:
@@ -974,7 +981,6 @@ public class Main {
 						add("load file");
 						add("delete save");
 						add("deck edit");
-						add("deck standard");
 						add("restore defaults");
 						add("patch notes");
 						add("view licenses");
@@ -1064,7 +1070,6 @@ public class Main {
 						System.out.println("delete save - delete a save from the file system");
 						System.out.println(
 								"deck edit - create deck presets and edit the deck that will be used during the game.");
-						System.out.println("deck standard - load the standard deck.");
 						System.out.println(
 								"restore defaults - will delete the latest save file and restore default settings.");
 						System.out.println("patch notes - view the patch notes of any specific version of Blackjack.");
@@ -1134,10 +1139,6 @@ public class Main {
 						break;
 					case "deck edit":
 						deckEdit();
-						break;
-					case "deck standard":
-						currentDeck = "standard";
-						deck = Deck.STANDARD_52;
 						break;
 					case "restore defaults":
 						System.out.println("All of your saves will be kept except the latest one.");
