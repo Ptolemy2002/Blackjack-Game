@@ -7,12 +7,13 @@ import cards.CardGame;
 import cards.CardPlayer;
 import cards.Deck;
 import cards.EnumCardNumber;
+import main.Main;
 import main.Tools;
 
 /**
  * The game will act as the dealer.
  */
-
+@SuppressWarnings("serial")
 public class BlackjackGame extends CardGame {
 	public Integer maxHits;
 	protected boolean valuableAce = false;
@@ -61,8 +62,9 @@ public class BlackjackGame extends CardGame {
 		System.out.println("If you are closer to 21 than the dealer, you win and take double your bet!");
 		System.out.println("If you are farther from 21 than the dealer, you lose your bet.");
 		System.out.println("");
-		
-		System.out.println("More detailed rules are available here: https://github.com/Ptolemy2002/Blackjack-Game/wiki/Rules");
+
+		System.out.println(
+				"More detailed rules are available here: https://github.com/Ptolemy2002/Blackjack-Game/wiki/Rules");
 	}
 
 	@Override
@@ -113,62 +115,409 @@ public class BlackjackGame extends CardGame {
 			return;
 		}
 
-		System.out.println("It's time to play blackjack!");
-		System.out.println("Shuffling deck...");
-		this.getDeck().shuffle();
-		System.out.println("The deck has been shuffled.");
-		System.out.println("Dealing players...");
-		dealHands();
-		System.out.println("All players have been dealt.");
-		if (this.hasNatural()) {
-			System.out.println("The dealer has a natural!");
-			for (CardPlayer i : this.getPlayers()) {
-				if (((BlackjackPlayer) i).hasNatural()) {
-					System.out.println(i.toString() + " also has a natural, so they get nothing.");
-				} else {
-					i.collect(i.getBet());
-					System.out.println(
-							i.toString() + " does not hava a natural, so they lose their bet ($" + i.getBet() + ")!");
-				}
-				return;
+		System.out.println("Welcome to the Blackjack Game console!");
+		System.out.println("Type a command. Use \"help\" to see choices and \"play\" to start the game!");
+		ArrayList<String> choices = new ArrayList<String>() {
+			{
+				add("help");
+				add("play");
+				add("view bets");
+				add("set bet");
+				add("end game");
 			}
-		} else {
-			for (CardPlayer i : this.getPlayers()) {
-				if (((BlackjackPlayer) i).hasNatural()) {
-					i.pay(i.getBet() * 1.5);
-					((BlackjackPlayer) i).setSurrendered(true);
-					System.out.println(i.toString() + " has a natural, so they win with a payout of 3:2 ($"
-							+ (i.getBet() * 1.5) + ")! They will no longer play.");
-				}
-			}
-		}
+		};
 
-		// The dealer makes a decision on whether or not to count his ace as 11
-		// initially.
-		this.valuableAce = !(this.getDealerValue(true) > 21);
-		// Play at least once.
-		for (CardPlayer i : this.getPlayers()) {
-			if (Tools.Console.askBoolean("Would you like to view everyone's hands?", true)) {
-				System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
-						+ this.getVisibleDealerValue());
+		loop1: while (true) {
+			String choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\game>", null, true, false,
+					false, false);
+			System.out.println("");
+			switch (choice) {
+			case "end game":
+				break loop1;
+			case "help":
+				if (choices.contains("play")) {
+					System.out.println("play - start the game");
+				}
+				if (choices.contains("continue")) {
+					System.out.println("continue - continue to the next turn");
+				}
+				if (choices.contains("view hands")) {
+					System.out.println("view hands - view every player's hand");
+				}
+				System.out.println("help - show this list");
+				System.out.println("view bets - view everyone's bets");
+				System.out.println("set bet - set a player's bet on the fly");
+				System.out.println("end game - end the game.");
+				break;
+			case "view bets":
 				for (CardPlayer j : this.getPlayers()) {
-					if (((BlackjackPlayer) j).surrendered) {
-						System.out.println(j.toString() + " has surrendered!");
-					} else {
-						System.out.println(j.toString() + " has the hand " + j.getHand().toString() + " with the value "
-								+ ((BlackjackPlayer) j).getValue());
+					System.out.println(j.toString() + " has the bet $" + j.getBet());
+				}
+				break;
+			case "set bet":
+				CardPlayer player = Tools.Console.askSelection("Choices", this.getPlayers(), true,
+						"Choose a player to set the bet of.", null, true, true, true, false);
+				if (player.isAI()) {
+					player.setBet(Tools.Console.askDouble(
+							player.toString() + "'s bet is $" + player.getBet()
+									+ ". What would you like to change it to?",
+							true, x -> x >= Main.minAIBet && x <= Main.maxAIBet,
+							"The minimum AI bet is $" + Main.minAIBet + ". The maximum AI bet is $" + Main.maxAIBet
+									+ " (you can change them in properties)."));
+				} else {
+					player.setBet(Tools.Console.askDouble(
+							player.toString() + "'s bet is $" + player.getBet()
+									+ ". What would you like to change it to?",
+							true, x -> x >= Main.minBet && x <= Main.maxBet,
+							"The minimum bet is $" + Main.minBet + ". The maximum bet is $" + Main.maxBet
+									+ " (you can change them in properties)."));
+				}
+				System.out.println("Set " + player.getName() + "'s bet to $" + player.getBet());
+				break;
+			case "play":
+				choices.add("view hands");
+				choices.add("continue");
+				choices.remove("play");
+
+				System.out.println("Shuffling deck...");
+				this.getDeck().shuffle();
+				System.out.println("The deck has been shuffled.");
+				System.out.println("Dealing players...");
+				dealHands();
+				System.out.println("All players have been dealt.");
+				if (this.hasNatural()) {
+					System.out.println("The dealer has a natural!");
+					for (CardPlayer i : this.getPlayers()) {
+						if (((BlackjackPlayer) i).hasNatural()) {
+							System.out.println(i.toString() + " also has a natural, so they get nothing.");
+						} else {
+							i.collect(i.getBet());
+							System.out.println(i.toString() + " does not hava a natural, so they lose their bet ($"
+									+ i.getBet() + ")!");
+						}
+						return;
+					}
+				} else {
+					for (CardPlayer i : this.getPlayers()) {
+						if (((BlackjackPlayer) i).hasNatural()) {
+							i.pay(i.getBet() * 1.5);
+							((BlackjackPlayer) i).setSurrendered(true);
+							System.out.println(i.toString() + " has a natural, so they win with a payout of 3:2 ($"
+									+ (i.getBet() * 1.5) + ")! They will no longer play.");
+						}
 					}
 				}
-			}
-			i.play();
-		}
-		dealerPlay();
 
-		while (this.getDealerValue() < 17 && this.getDealerValue() <= 21) {
-			for (CardPlayer i : this.getPlayers()) {
-				if (Tools.Console.askBoolean("Would you like to view everyone's hands?", true)) {
-					System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
-							+ this.getVisibleDealerValue());
+				// The dealer makes a decision on whether or not to count his ace as 11
+				// initially.
+				this.valuableAce = !(this.getDealerValue(true) > 21);
+				// Play at least once.
+				for (CardPlayer i : this.getPlayers()) {
+					System.out.println("");
+					System.out.println("The game has been suspended.");
+					System.out.println("You can now perform various tasks.");
+					System.out.println("Type \"help\" to view choices. Type \"continue\" to continue the game.");
+					loop: while (true) {
+						choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\game>", null, true,
+								false, false, false);
+						System.out.println("");
+						switch (choice) {
+						case "continue":
+							break loop;
+						case "end game":
+							break loop1;
+						case "help":
+							if (choices.contains("play")) {
+								System.out.println("play - start the game");
+							}
+							if (choices.contains("continue")) {
+								System.out.println("continue - continue to the next turn");
+							}
+							if (choices.contains("view hands")) {
+								System.out.println("view hands - view every player's hand");
+							}
+							System.out.println("help - show this list");
+							System.out.println("view bets - view everyone's bets");
+							System.out.println("set bet - set a player's bet on the fly");
+							System.out.println("end game - end the game.");
+							break;
+						case "view bets":
+							for (CardPlayer j : this.getPlayers()) {
+								System.out.println(j.toString() + " has the bet $" + j.getBet());
+							}
+							break;
+						case "set bet":
+							CardPlayer player1 = Tools.Console.askSelection("Players", this.getPlayers(), true,
+									"Choose a player to set the bet of.", null, true, true, true, false);
+							if (player1.isAI()) {
+								player1.setBet(Tools.Console.askDouble(
+										player1.toString() + "'s bet is $" + player1.getBet()
+												+ ". What would you like to change it to?",
+										true, x -> x >= Main.minAIBet && x <= Main.maxAIBet,
+										"The minimum AI bet is $" + Main.minAIBet + ". The maximum AI bet is $"
+												+ Main.maxAIBet + " (you can change them in properties)."));
+							} else {
+								player1.setBet(Tools.Console.askDouble(
+										player1.toString() + "'s bet is $" + player1.getBet()
+												+ ". What would you like to change it to?",
+										true, x -> x >= Main.minBet && x <= Main.maxBet,
+										"The minimum bet is $" + Main.minBet + ". The maximum bet is $" + Main.maxBet
+												+ " (you can change them in properties)."));
+							}
+							System.out.println("Set " + player1.getName() + "'s bet to $" + player1.getBet());
+							break;
+						case "view hands":
+							System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
+									+ this.getVisibleDealerValue());
+							for (CardPlayer j : this.getPlayers()) {
+								if (((BlackjackPlayer) j).surrendered) {
+									System.out.println(j.toString() + " has surrendered!");
+								} else {
+									System.out.println(j.toString() + " has the hand " + j.getHand().toString()
+											+ " with the value " + ((BlackjackPlayer) j).getValue());
+								}
+							}
+							break;
+						}
+						System.out.println("");
+					}
+
+					i.play();
+				}
+
+				System.out.println("");
+				System.out.println("The game has been suspended.");
+				System.out.println("You can now perform various tasks.");
+				System.out.println("Type \"help\" to view choices. Type \"continue\" to continue the game.");
+				loop: while (true) {
+					choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\game>", null, true, false,
+							false, false);
+					System.out.println("");
+					switch (choice) {
+					case "continue":
+						break loop;
+					case "end game":
+						break loop1;
+					case "help":
+						if (choices.contains("play")) {
+							System.out.println("play - start the game");
+						}
+						if (choices.contains("continue")) {
+							System.out.println("continue - continue to the next turn");
+						}
+						if (choices.contains("view hands")) {
+							System.out.println("view hands - view every player's hand");
+						}
+						System.out.println("help - show this list");
+						System.out.println("view bets - view everyone's bets");
+						System.out.println("set bet - set a player's bet on the fly");
+						System.out.println("end game - end the game.");
+						break;
+					case "view bets":
+						for (CardPlayer j : this.getPlayers()) {
+							System.out.println(j.toString() + " has the bet $" + j.getBet());
+						}
+						break;
+					case "set bet":
+						CardPlayer player1 = Tools.Console.askSelection("Players", this.getPlayers(), true,
+								"Choose a player to set the bet of.", null, true, true, true, false);
+						if (player1.isAI()) {
+							player1.setBet(Tools.Console.askDouble(
+									player1.toString() + "'s bet is $" + player1.getBet()
+											+ ". What would you like to change it to?",
+									true, x -> x >= Main.minAIBet && x <= Main.maxAIBet,
+									"The minimum AI bet is $" + Main.minAIBet + ". The maximum AI bet is $"
+											+ Main.maxAIBet + " (you can change them in properties)."));
+						} else {
+							player1.setBet(Tools.Console.askDouble(
+									player1.toString() + "'s bet is $" + player1.getBet()
+											+ ". What would you like to change it to?",
+									true, x -> x >= Main.minBet && x <= Main.maxBet,
+									"The minimum bet is $" + Main.minBet + ". The maximum bet is $" + Main.maxBet
+											+ " (you can change them in properties)."));
+						}
+						System.out.println("Set " + player1.getName() + "'s bet to $" + player1.getBet());
+						break;
+					case "view hands":
+						System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
+								+ this.getVisibleDealerValue());
+						for (CardPlayer j : this.getPlayers()) {
+							if (((BlackjackPlayer) j).surrendered) {
+								System.out.println(j.toString() + " has surrendered!");
+							} else {
+								System.out.println(j.toString() + " has the hand " + j.getHand().toString()
+										+ " with the value " + ((BlackjackPlayer) j).getValue());
+							}
+						}
+						break;
+					}
+					System.out.println("");
+				}
+
+				dealerPlay();
+
+				while (this.getDealerValue() < 17 && this.getDealerValue() <= 21) {
+					for (CardPlayer i : this.getPlayers()) {
+						System.out.println("");
+						System.out.println("The game has been suspended.");
+						System.out.println("You can now perform various tasks.");
+						System.out.println("Type \"help\" to view choices. Type \"continue\" to continue the game.");
+						loop: while (true) {
+							choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\game>", null,
+									true, false, false, false);
+							System.out.println("");
+							switch (choice) {
+							case "continue":
+								break loop;
+							case "end game":
+								break loop1;
+							case "help":
+								if (choices.contains("play")) {
+									System.out.println("play - start the game");
+								}
+								if (choices.contains("continue")) {
+									System.out.println("continue - continue to the next turn");
+								}
+								if (choices.contains("view hands")) {
+									System.out.println("view hands - view every player's hand");
+								}
+								System.out.println("help - show this list");
+								System.out.println("view bets - view everyone's bets");
+								System.out.println("set bet - set a player's bet on the fly");
+								System.out.println("end game - end the game.");
+								break;
+							case "view bets":
+								for (CardPlayer j : this.getPlayers()) {
+									System.out.println(j.toString() + " has the bet $" + j.getBet());
+								}
+								break;
+							case "set bet":
+								CardPlayer player1 = Tools.Console.askSelection("Players", this.getPlayers(), true,
+										"Choose a player to set the bet of.", null, true, true, true, false);
+								if (player1.isAI()) {
+									player1.setBet(Tools.Console.askDouble(
+											player1.toString() + "'s bet is $" + player1.getBet()
+													+ ". What would you like to change it to?",
+											true, x -> x >= Main.minAIBet && x <= Main.maxAIBet,
+											"The minimum AI bet is $" + Main.minAIBet + ". The maximum AI bet is $"
+													+ Main.maxAIBet + " (you can change them in properties)."));
+								} else {
+									player1.setBet(Tools.Console.askDouble(
+											player1.toString() + "'s bet is $" + player1.getBet()
+													+ ". What would you like to change it to?",
+											true, x -> x >= Main.minBet && x <= Main.maxBet,
+											"The minimum bet is $" + Main.minBet + ". The maximum bet is $"
+													+ Main.maxBet + " (you can change them in properties)."));
+								}
+								System.out.println("Set " + player1.getName() + "'s bet to $" + player1.getBet());
+								break;
+							case "view hands":
+								System.out.println("The dealer has the hand " + this.getDealerHand()
+										+ " with the value " + this.getVisibleDealerValue());
+								for (CardPlayer j : this.getPlayers()) {
+									if (((BlackjackPlayer) j).surrendered) {
+										System.out.println(j.toString() + " has surrendered!");
+									} else {
+										System.out.println(j.toString() + " has the hand " + j.getHand().toString()
+												+ " with the value " + ((BlackjackPlayer) j).getValue());
+									}
+								}
+								break;
+							}
+							System.out.println("");
+						}
+
+						i.play();
+					}
+
+					System.out.println("");
+					System.out.println("The game has been suspended.");
+					System.out.println("You can now perform various tasks.");
+					System.out.println("Type \"help\" to view choices. Type \"continue\" to continue the game.");
+					loop: while (true) {
+						choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\game>", null, true,
+								false, false, false);
+						System.out.println("");
+						switch (choice) {
+						case "continue":
+							break loop;
+						case "end game":
+							break loop1;
+						case "help":
+							if (choices.contains("play")) {
+								System.out.println("play - start the game");
+							}
+							if (choices.contains("continue")) {
+								System.out.println("continue - continue to the next turn");
+							}
+							if (choices.contains("view hands")) {
+								System.out.println("view hands - view every player's hand");
+							}
+							System.out.println("help - show this list");
+							System.out.println("view bets - view everyone's bets");
+							System.out.println("set bet - set a player's bet on the fly");
+							System.out.println("end game - end the game.");
+							break;
+						case "view bets":
+							for (CardPlayer j : this.getPlayers()) {
+								System.out.println(j.toString() + " has the bet $" + j.getBet());
+							}
+							break;
+						case "set bet":
+							CardPlayer player1 = Tools.Console.askSelection("Players", this.getPlayers(), true,
+									"Choose a player to set the bet of.", null, true, true, true, false);
+							if (player1.isAI()) {
+								player1.setBet(Tools.Console.askDouble(
+										player1.toString() + "'s bet is $" + player1.getBet()
+												+ ". What would you like to change it to?",
+										true, x -> x >= Main.minAIBet && x <= Main.maxAIBet,
+										"The minimum AI bet is $" + Main.minAIBet + ". The maximum AI bet is $"
+												+ Main.maxAIBet + " (you can change them in properties)."));
+							} else {
+								player1.setBet(Tools.Console.askDouble(
+										player1.toString() + "'s bet is $" + player1.getBet()
+												+ ". What would you like to change it to?",
+										true, x -> x >= Main.minBet && x <= Main.maxBet,
+										"The minimum bet is $" + Main.minBet + ". The maximum bet is $" + Main.maxBet
+												+ " (you can change them in properties)."));
+							}
+							System.out.println("Set " + player1.getName() + "'s bet to $" + player1.getBet());
+							break;
+						case "view hands":
+							System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
+									+ this.getVisibleDealerValue());
+							for (CardPlayer j : this.getPlayers()) {
+								if (((BlackjackPlayer) j).surrendered) {
+									System.out.println(j.toString() + " has surrendered!");
+								} else {
+									System.out.println(j.toString() + " has the hand " + j.getHand().toString()
+											+ " with the value " + ((BlackjackPlayer) j).getValue());
+								}
+							}
+							break;
+						}
+						System.out.println("");
+					}
+					dealerPlay();
+				}
+
+				System.out.println("The game ended!");
+				if (this.getDealerValue() > 21) {
+					System.out.println("The dealer has gone bust!");
+				}
+
+				for (Card i : this.dealerHand.getCards()) {
+					i.setFaceUp(true);
+				}
+
+				if (Tools.Console.askBoolean("Would you like to view everyone's final hands?", true)) {
+					if (this.getDealerValue() <= 21) {
+						System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
+								+ this.getVisibleDealerValue());
+					} else {
+						System.out.println("The dealer has gone bust!");
+					}
+
 					for (CardPlayer j : this.getPlayers()) {
 						if (((BlackjackPlayer) j).surrendered) {
 							System.out.println(j.toString() + " has surrendered!");
@@ -178,64 +527,38 @@ public class BlackjackGame extends CardGame {
 						}
 					}
 				}
-				i.play();
-			}
-			dealerPlay();
-		}
 
-		System.out.println("The game ended!");
-		if (this.getDealerValue() > 21) {
-			System.out.println("The dealer has gone bust!");
-		}
-
-		for (Card i : this.dealerHand.getCards()) {
-			i.setFaceUp(true);
-		}
-
-		if (Tools.Console.askBoolean("Would you like to view everyone's final hands?", true)) {
-			if (this.getDealerValue() <= 21) {
-				System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
-						+ this.getVisibleDealerValue());
-			} else {
-				System.out.println("The dealer has gone bust!");
-			}
-
-			for (CardPlayer j : this.getPlayers()) {
-				if (((BlackjackPlayer) j).surrendered) {
-					System.out.println(j.toString() + " has surrendered!");
-				} else {
-					System.out.println(j.toString() + " has the hand " + j.getHand().toString() + " with the value "
-							+ ((BlackjackPlayer) j).getValue());
+				System.out.println("Winners will now be determined.");
+				for (CardPlayer i : this.getPlayers()) {
+					if (!((BlackjackPlayer) i).surrendered) {
+						if (((BlackjackPlayer) i).getValue() > this.getDealerValue() || this.getDealerValue() > 21) {
+							i.pay(Tools.Numbers.roundDouble(i.getBet(), 2));
+							System.out.println(i.toString() + " has beat the dealer and won with a payout of 1:1 ($"
+									+ Tools.Numbers.roundDouble(i.getBet(), 2) + ")");
+						} else if (((BlackjackPlayer) i).getValue() < this.getDealerValue()) {
+							i.collect(i.getBet());
+							System.out.println(
+									i.toString() + " hasn't beat the dealer and lost their bet ($" + i.getBet() + ")");
+						} else {
+							System.out.println(i.toString() + " has tied the dealer, so they get nothing.");
+						}
+					} else {
+						System.out.println(i.toString() + " has surrendered.");
+					}
 				}
+				for (CardPlayer i : this.getPlayers()) {
+					i.setMoney(Tools.Numbers.roundDouble(i.getMoney(), 2));
+				}
+				if (Tools.Console.askBoolean("Would you like to reset everyone's bets?", true)) {
+					for (CardPlayer i : this.getPlayers()) {
+						i.setBet(0.0);
+					}
+				}
+				break loop1;
 			}
+			System.out.println("");
 		}
 
-		System.out.println("Winners will now be determined.");
-		for (CardPlayer i : this.getPlayers()) {
-			if (!((BlackjackPlayer) i).surrendered) {
-				if (((BlackjackPlayer) i).getValue() > this.getDealerValue() || this.getDealerValue() > 21) {
-					i.pay(Tools.Numbers.roundDouble(i.getBet(), 2));
-					System.out.println(i.toString() + " has beat the dealer and won with a payout of 1:1 ($"
-							+ Tools.Numbers.roundDouble(i.getBet(), 2) + ")");
-				} else if (((BlackjackPlayer) i).getValue() < this.getDealerValue()) {
-					i.collect(i.getBet());
-					System.out
-							.println(i.toString() + " hasn't beat the dealer and lost their bet ($" + i.getBet() + ")");
-				} else {
-					System.out.println(i.toString() + " has tied the dealer, so they get nothing.");
-				}
-			} else {
-				System.out.println(i.toString() + " has surrendered.");
-			}
-		}
-		for (CardPlayer i : this.getPlayers()) {
-			i.setMoney(Tools.Numbers.roundDouble(i.getMoney(), 2));
-		}
-		if (Tools.Console.askBoolean("Would you like to reset everyone's bets?", true)) {
-			for (CardPlayer i : this.getPlayers()) {
-				i.setBet(0.0);
-			}
-		}
 	}
 
 	@Override
