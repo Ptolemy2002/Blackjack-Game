@@ -61,7 +61,7 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
-	public static final String VERSION = "beta 2.0-4";
+	public static final String VERSION = "beta 2.0-5";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
 			{ "You can now convert ai players to normal and normal players to ai without data loss.",
@@ -73,7 +73,8 @@ public class Main {
 					"The game will now warn you of unsaved changes before shutdown." },
 			{ "The game will now detect incorrect shutdowns and warn you next time you start the game." },
 			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" },
-			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" } };
+			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" },
+			{ "Redesigned interface for the Blackjack game itself." } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -84,6 +85,7 @@ public class Main {
 			add("beta 2.0-2");
 			add("beta 2.0-3");
 			add("beta 2.0-4");
+			add("beta 2.0-5");
 		}
 	};
 
@@ -101,8 +103,8 @@ public class Main {
 			}
 		};
 
-		String choice = Tools.Console.askSelection("Properties", properties, true, "Pick a property to view or edit", "CANCEL",
-				true, true, true);
+		String choice = Tools.Console.askSelection("Properties", properties, true, "Pick a property to view or edit",
+				"CANCEL", true, true, true);
 		if (choice != null) {
 			switch (choice) {
 			case "minumum bet":
@@ -756,7 +758,8 @@ public class Main {
 				break;
 			case "create deck":
 				String name = Tools.Console.ask("What is the name of the new deck?", true,
-						x -> !x.equals("standard") && !decks.containsKey(x), "Cannot be standard or already existing!");
+						x -> !x.equals("standard") && !decks.containsKey(x),
+						"Cannot be \"standard\" or already existing!");
 				decks.put(name, new Deck(new Card[] {}));
 				System.out.println("Created an empty deck.");
 				break;
