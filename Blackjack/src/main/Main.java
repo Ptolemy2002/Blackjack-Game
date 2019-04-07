@@ -74,7 +74,8 @@ public class Main {
 			{ "The game will now detect incorrect shutdowns and warn you next time you start the game." },
 			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" },
 			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" },
-			{ "Redesigned interface for the Blackjack game itself." }, { "Redesigned interface for the players." }, {"Added shutdown detection", "Redesigned the interface of the game."} };
+			{ "Redesigned interface for the Blackjack game itself." }, { "Redesigned interface for the players." },
+			{ "Added shutdown detection", "Redesigned the interface of the game." } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
