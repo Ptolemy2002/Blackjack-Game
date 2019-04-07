@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -61,7 +62,8 @@ public class Tools {
 
 		/**
 		 * Test if the specified segment is present at the specified index of the
-		 * specified target.
+		 * specified target. Will return false if ny type of error occurs, including out
+		 * of bounds errors.
 		 * 
 		 * @param target  the string that should have the segment
 		 * @param segment the segment to test for
@@ -70,15 +72,32 @@ public class Tools {
 		 *         the specified target.
 		 */
 		public static boolean segment(String target, String segment, int index) {
-			for (int i = index; i - index < segment.length(); i++) {
-				Character char1 = target.charAt(i);
-				Character char2 = segment.charAt(i - index);
-				if (!char1.equals(char2)) {
-					return false;
+			try {
+				for (int i = index; i - index < segment.length(); i++) {
+					Character char1 = target.charAt(i);
+					Character char2 = segment.charAt(i - index);
+					if (!char1.equals(char2)) {
+						return false;
+					}
 				}
-			}
 
-			return true;
+				return true;
+			} catch (Exception e) {
+				return false;
+			}
+		}
+
+		/**
+		 * Tests if the character at the specified index of the specified string is
+		 * escaped. That is, it is preceded by a "\", and not two "\"s.
+		 * 
+		 * @param s the string
+		 * @param i the index
+		 * @return whether the character is escaped
+		 */
+		public static boolean isEscaped(String s, int i, String escapeChar) {
+			return segment(s, escapeChar, i - escapeChar.length())
+					&& !(segment(s, escapeChar, i - (escapeChar.length() * 2)));
 		}
 
 		/**
@@ -88,6 +107,7 @@ public class Tools {
 		 * @param target      the string to replace the segment in
 		 * @param segment     the segment to replace
 		 * @param replacement the string to replace the segment with
+		 * @param escapeChar  the segment that is used to escape an ignoreChar.
 		 * @param ignoreChars the set of ignoreChars. Each item should have a length of
 		 *                    exactly 2, with the start of the encasement at index 0,
 		 *                    and the end at index 1. For example, if you wanted to
@@ -97,31 +117,45 @@ public class Tools {
 		 *         replacement unless the segment is wrapped in one of the specified
 		 *         ignreChar sets.
 		 */
-		public static String replace(String target, String segment, String replacement, String[]... ignoreChars) {
+		public static String replace(String target, String segment, String replacement, String escapeChar,
+				String[]... ignoreChars) {
 			String res = "";
-			boolean ignore = false;
+			int ignoreCount = 0;
+			String startIgnoreChar = null;
+			String endIgnoreChar = null;
 
 			for (int i = 0; i < target.length(); i++) {
-				for (String[] ignoreChar : ignoreChars) {
-					if (!ignoreChar[0].equals(ignoreChar[1])) {
-						if (segment(target, ignoreChar[0], i)) {
-							ignore = true;
-							break;
-						} else if (segment(target, ignoreChar[1], i)) {
-							ignore = false;
-						}
-					} else {
-						if (segment(target, ignoreChar[0], i)) {
-							ignore = !ignore;
+				if (startIgnoreChar == null) {
+					for (String[] ignoreChar : ignoreChars) {
+						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i, escapeChar)) {
+							// System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
+							ignoreCount++;
+							startIgnoreChar = ignoreChar[0];
+							endIgnoreChar = ignoreChar[1];
 							break;
 						}
 					}
-
+				} else if (startIgnoreChar.equals(endIgnoreChar)) {
+					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
+						ignoreCount--;
+					}
+				} else {
+					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
+						ignoreCount++;
+					} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
+						ignoreCount--;
+					}
 				}
 
-				if (!ignore && segment(target, segment, i)) {
+				if (ignoreCount <= 0) {
+					ignoreCount = 0;
+					startIgnoreChar = null;
+					endIgnoreChar = null;
+				}
+
+				if (ignoreCount <= 0 && segment(target, segment, i)) {
 					res += replacement;
-					i += replacement.length() - 2;
+					i += segment.length() - 1;
 				} else {
 					res += target.charAt(i);
 				}
@@ -140,11 +174,12 @@ public class Tools {
 			// Add new lines where required
 			json.replace("\n", "");
 			String res1 = json;
-			res1 = replace(res1, "{", "{\n", new String[] { "\"", "\"" });
-			res1 = replace(res1, "[", "[\n", new String[] { "\"", "\"" });
-			res1 = replace(res1, "}", "\n}", new String[] { "\"", "\"" });
-			res1 = replace(res1, "]", "\n]", new String[] { "\"", "\"" });
-			res1 = replace(res1, ",", ",\n", new String[] { "\"", "\"" });
+			res1 = replace(res1, "{", "{\n", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "[", "[\n", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "}", "\n}", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "]", "\n]", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, ",", ",\n", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, ":", ": ", "\\", new String[] { "\"", "\"" });
 
 			// Insert tabs
 			String res2 = "{\n";
@@ -157,7 +192,7 @@ public class Tools {
 					lastChar = i.charAt(i.length() - 1);
 					if (lastChar == '}' || lastChar == ']') {
 						tabs--;
-					}  else if (lastChar == ',') {
+					} else if (lastChar == ',') {
 						lastChar = i.charAt(i.length() - 2);
 						if (lastChar == '}' || lastChar == ']') {
 							tabs--;
@@ -356,6 +391,119 @@ public class Tools {
 				e.printStackTrace();
 				return false;
 			}
+		}
+
+		/**
+		 * Copy files from the source path to the destination path. Works with
+		 * directories also.
+		 * 
+		 * @param sourcePath      the source file or directory
+		 * @param destinationPath the file or directory to dump it into
+		 * @return true if the operation was successful, false if error.
+		 */
+		public static boolean copyFiles(File sourceLocation, File targetLocation) {
+			try {
+				if (sourceLocation.isDirectory()) {
+					if (!sourceLocation.exists() && !sourceLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + sourceLocation);
+					}
+
+					if (!targetLocation.exists() && !targetLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + targetLocation);
+					}
+
+					String[] children = sourceLocation.list();
+					for (int i = 0; i < children.length; i++) {
+						copyFiles(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+					}
+				} else {
+					File parent = sourceLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					parent = targetLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					InputStream in = new FileInputStream(sourceLocation);
+					OutputStream out = new FileOutputStream(targetLocation);
+
+					// Copy the bits from instream to outstream
+					byte[] buf = new byte[1024];
+					int len;
+					while ((len = in.read(buf)) > 0) {
+						out.write(buf, 0, len);
+					}
+					in.close();
+					out.close();
+				}
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+
+		/**
+		 * Copy files from the source path to the destination path. Works with
+		 * directories also.
+		 * 
+		 * @param sourcePath      the source path of the file or directory
+		 * @param destinationPath the file or directory to dump it into
+		 * @return true if the operation was successful, false if error.
+		 */
+		public static boolean copyFiles(String sourcePath, String destinationPath) {
+			try {
+				File sourceLocation = new File(sourcePath);
+				File targetLocation = new File(destinationPath);
+				if (sourceLocation.isDirectory()) {
+					if (!sourceLocation.exists() && !sourceLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + sourceLocation);
+					}
+
+					if (!targetLocation.exists() && !targetLocation.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + targetLocation);
+					}
+
+					String[] children = sourceLocation.list();
+					for (int i = 0; i < children.length; i++) {
+						copyFiles(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+					}
+				} else {
+					File parent = sourceLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					parent = targetLocation.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Couldn't create dir: " + parent);
+					}
+					sourceLocation.createNewFile();
+
+					InputStream in = new FileInputStream(sourceLocation);
+					OutputStream out = new FileOutputStream(targetLocation);
+
+					// Copy the bits from instream to outstream
+					byte[] buf = new byte[1024];
+					int len;
+					while ((len = in.read(buf)) > 0) {
+						out.write(buf, 0, len);
+					}
+					in.close();
+					out.close();
+				}
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+
 		}
 
 		/**
