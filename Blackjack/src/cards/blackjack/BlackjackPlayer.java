@@ -36,29 +36,7 @@ public class BlackjackPlayer extends CardPlayer {
 			System.out.println("It's " + this.toString() + "'s turn!");
 			int maxHits = ((BlackjackGame) gameIn).getMaxHits();
 			int hits = 0;
-			while (hits < maxHits) {
-				if (Tools.Console.askBoolean("Would you like to view " + this.toString() + "'s stats?", true)) {
-					System.out.println(this.toString() + "'s hand is " + this.getHand().toString() + " with the value "
-							+ this.getValue());
-					System.out.println(this.toString() + " has hit " + hits + " times.");
-					System.out.println(this.toString() + " can hit up to "
-							+ (maxHits == Integer.MAX_VALUE ? "Infinity" : maxHits) + " times.");
-				}
-
-				if (this.hasSoftHand()) {
-					if (!(getValue(true) > 21)) {
-						System.out.println(this.toString() + "'s value will be " + (this.getValue(true))
-								+ " if they count their ace as 11. Otherwise, it will be " + this.getValue(false));
-						this.valuableAce = Tools.Console
-								.askBoolean("Would " + this.toString() + " like to count their ace as 11?", true);
-					} else {
-						valuableAce = false;
-						if (!(getValue() > 21)) {
-							System.out.println("If " + this.toString() + " counts their ace as 11, they will go bust!");
-						}
-					}
-				}
-
+			loop: while (hits < maxHits) {
 				if (this.getValue() > 21) {
 					this.surrendered = true;
 					System.out.println(
@@ -68,15 +46,44 @@ public class BlackjackPlayer extends CardPlayer {
 					break;
 				}
 
-				String choice = Tools.Console.askSelection("Choices", new ArrayList<String>() {
+				ArrayList<String> choices = new ArrayList<String>() {
 					{
 						add("hit");
 						add("pass");
 						add("surrender");
+						add("view stats");
+						add("help");
 					}
-				}, true, "Does " + this.toString() + " want to pass, hit, or surrender?", null, true, false, false);
+				};
 
-				if (choice.equalsIgnoreCase("hit")) {
+				if (this.hasSoftHand()) {
+					if (!(getValue(true) > 21)) {
+						if (valuableAce == false) {
+							System.out.println(this.toString() + "'s value will be " + (this.getValue(true))
+									+ " if they count their ace as 11. Otherwise, it will be " + this.getValue(false));
+							this.valuableAce = Tools.Console
+									.askBoolean("Would " + this.toString() + " like to count their ace as 11?", true);
+						}
+						choices.add("valuable ace");
+						choices.add("invaluable ace");
+					} else {
+						valuableAce = false;
+						if (!(getValue() > 21)) {
+							System.out.println("If " + this.toString() + " counts their ace as 11, they will go bust!");
+							System.out.println(this.toString() + " is forced to count their ace as 1.");
+						}
+					}
+				}
+				String choice = Tools.Console.askSelection("Choices", choices, true,
+						"Blackjack\\game\\" + this.toString() + ">", null, true, false, false);
+				switch (choice) {
+				case "view stats":
+					System.out.println(this.toString() + "'s hand is " + this.getHand().toString() + " with the value "
+							+ this.getValue());
+					System.out.println(this.toString() + " has hit " + hits + "/"
+							+ (maxHits == Integer.MAX_VALUE ? "Infinity" : maxHits) + " times.");
+					break;
+				case "hit":
 					this.deal(gameIn.getDeck().drawTop().setFaceUp(true));
 					System.out.println(this.toString() + " has hit!");
 					System.out.println(this.toString() + " now has the hand " + this.getHand() + " with the value "
@@ -88,14 +95,27 @@ public class BlackjackPlayer extends CardPlayer {
 						this.getGame().resetDeck();
 						this.getGame().getDeck().shuffle();
 					}
-				} else if (choice.equalsIgnoreCase("pass")) {
-					System.out.println(this.toString() + " has passed.");
 					break;
-				} else if (choice.equalsIgnoreCase("surrender")) {
+				case "pass":
+					System.out.println(this.toString() + " has passed.");
+					break loop;
+				case "surrender":
 					this.collect(this.getBet() * 0.5);
 					surrendered = true;
 					System.out.println(this.toString() + " has surrendered and lost half their bet ($"
 							+ this.getBet() * 0.5 + ")");
+					break loop;
+				case "help":
+					System.out.println("hit - draw a card. You can do this "
+							+ (maxHits == Integer.MAX_VALUE ? "Infinity" : maxHits) + " times in a turn.");
+					System.out.println("pass - pass your turn and do not draw a card.");
+					System.out.println("surrender - surrender and lose half your bet");
+					System.out.println("view stats - view your hand and your hit amount.");
+					if (choices.contains("valuable ace")) {
+						System.out.println("valuable ace - count your ace as 11.");
+						System.out.println("invaluable ace - count your ace as 1.");
+					}
+					break;
 				}
 			}
 

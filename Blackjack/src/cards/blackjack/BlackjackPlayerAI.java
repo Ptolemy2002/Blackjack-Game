@@ -66,6 +66,8 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 			} else {
 				System.out.println(this.toString() + " has run out of hits!");
 			}
+		} else {
+			System.out.println(this.toString() + " has surrendered, so they can't play.");
 		}
 	}
 
