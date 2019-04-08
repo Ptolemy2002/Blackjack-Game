@@ -34,6 +34,8 @@ public class BlackjackPlayer extends CardPlayer {
 				valuableAce = false;
 			}
 			System.out.println("It's " + this.toString() + "'s turn!");
+			System.out.println("Type a command. Type \"help\" to view your choices.");
+
 			int maxHits = ((BlackjackGame) gameIn).getMaxHits();
 			int hits = 0;
 			loop: while (hits < maxHits) {
@@ -67,15 +69,19 @@ public class BlackjackPlayer extends CardPlayer {
 						choices.add("valuable ace");
 						choices.add("invaluable ace");
 					} else {
-						valuableAce = false;
-						if (!(getValue() > 21)) {
-							System.out.println("If " + this.toString() + " counts their ace as 11, they will go bust!");
-							System.out.println(this.toString() + " is forced to count their ace as 1.");
+						if (valuableAce == true) {
+							valuableAce = false;
+							if (!(getValue() > 21)) {
+								System.out.println("If " + this.toString() + " counts their ace as 11, they will go bust!");
+								System.out.println(this.toString() + " is forced to count their ace as 1.");
+							}
 						}
 					}
 				}
+
 				String choice = Tools.Console.askSelection("Choices", choices, true,
 						"Blackjack\\game\\" + this.toString() + ">", null, true, false, false);
+				System.out.println("");
 				switch (choice) {
 				case "view stats":
 					System.out.println(this.toString() + "'s hand is " + this.getHand().toString() + " with the value "
@@ -118,6 +124,7 @@ public class BlackjackPlayer extends CardPlayer {
 					break;
 				}
 			}
+			System.out.println("");
 
 			if (hits == maxHits) {
 				System.out.println(this.toString() + " has run out of hits!");
