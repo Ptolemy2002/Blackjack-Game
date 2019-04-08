@@ -155,7 +155,7 @@ public class BlackjackGame extends CardGame {
 				}
 				break;
 			case "set bet":
-				CardPlayer player = Tools.Console.askSelection("Choices", this.getPlayers(), true,
+				CardPlayer player = Tools.Console.askSelection("Players", this.getPlayers(), true,
 						"Choose a player to set the bet of.", null, true, true, true, false);
 				if (player.isAI()) {
 					player.setBet(Tools.Console.askDouble(
