@@ -172,9 +172,12 @@ public class Tools {
 		 */
 		public static String prettyPrintJSON(String json) {
 			// Add new lines where required
-			json.replace("\n", "");
+			json.replaceAll("\n", "");
 			String res1 = json;
 			res1 = replace(res1, " ", "", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, "\t", "", "\\", new String[] { "\"", "\"" });
+			res1 = replace(res1, " \r", "", "\\", new String[] { "\"", "\"" });
+			
 			res1 = replace(res1, "{", "{\n", "\\", new String[] { "\"", "\"" });
 			res1 = replace(res1, "[", "[\n", "\\", new String[] { "\"", "\"" });
 			res1 = replace(res1, "}", "\n}", "\\", new String[] { "\"", "\"" });
