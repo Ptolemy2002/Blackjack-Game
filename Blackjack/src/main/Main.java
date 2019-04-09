@@ -738,9 +738,10 @@ public class Main {
 		};
 
 		System.out.println("Welcome to the deck edit console!");
+		System.out.println("Type a command. Type \"help\" for choices.");
 		loop: while (true) {
-			String choice = Tools.Console.askSelection("Decks", choices, true, "Blackjack\\deck edit>", "CANCEL", true,
-					true, false, false);
+			String choice = Tools.Console.askSelection("Choices", choices, true, "Blackjack\\deck edit>", null, true,
+					false, false, false);
 			System.out.println("");
 			switch (choice) {
 			case "quit":
