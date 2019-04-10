@@ -794,7 +794,7 @@ public class Main {
 			default:
 				String d1 = Tools.Console.askSelection("Decks", new ArrayList<String>(decks.keySet()), true,
 						"Choose a deck to perform the operation on.", "CANCEL", true, true, true, false);
-				Deck deckChoice = decks.get(choice);
+				Deck deckChoice = decks.get(d1);
 				if (deckChoice != null) {
 					switch (choice) {
 					case "view deck":
@@ -852,7 +852,7 @@ public class Main {
 						}
 						break;
 					}
-
+					System.out.println("The operation has been performed.");
 				}
 			}
 			System.out.println("");
