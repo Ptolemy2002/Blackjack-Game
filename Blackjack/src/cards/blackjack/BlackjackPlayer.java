@@ -123,8 +123,8 @@ public class BlackjackPlayer extends CardPlayer {
 					}
 					break;
 				}
+				System.out.println("");
 			}
-			System.out.println("");
 
 			if (hits == maxHits) {
 				System.out.println(this.toString() + " has run out of hits!");

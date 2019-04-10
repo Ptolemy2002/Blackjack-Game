@@ -61,7 +61,7 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
-	public static final String VERSION = "2.0";
+	public static final String VERSION = "2.1";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
 			{ "You can now convert ai players to normal and normal players to ai without data loss.",
@@ -75,7 +75,7 @@ public class Main {
 			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" },
 			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" },
 			{ "Redesigned interface for the Blackjack game itself." }, { "Redesigned interface for the players." },
-			{ "Added shutdown detection", "Redesigned the interface of the game." } };
+			{ "Added shutdown detection", "Redesigned the interface of the game." }, {"Multiple bug fixes"} };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -89,6 +89,7 @@ public class Main {
 			add("beta 2.0-5");
 			add("beta 2.0-6");
 			add("2.0");
+			add("2.1");
 		}
 	};
 
