@@ -1,10 +1,11 @@
 package main;
 
 import java.awt.GraphicsEnvironment;
-
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
@@ -1181,9 +1182,11 @@ public class Main {
 						break;
 					}
 					System.out.println("");
-					// throw new Exception("test");
+					throw new Exception("test");
 				}
 			} catch (Exception e) {
+				//String console = new BufferedReader(System.out);
+				Date d = new Date();
 				System.out.println("The game has crashed!");
 				if (Tools.Console.askBoolean("Would you like to view the error?", true)) {
 					e.printStackTrace();
@@ -1194,7 +1197,8 @@ public class Main {
 				e.printStackTrace(pw);
 				pw.println("");
 				pw.println("save dump: \n" + Tools.Strings.prettyPrintJSON(getCurrentSave().toJSONString()));
-				String path = PATH + "\\crash reports\\" + dateFormat.format(new Date()) + ".txt";
+				//pw.println("console: \n" + console);
+				String path = PATH + "\\crash reports\\" + dateFormat.format(d) + ".txt";
 				if (Tools.Files.writeToFile(path, sw.toString())) {
 					System.out.println("Saved crash report to \"" + path + "\"");
 				} else {
