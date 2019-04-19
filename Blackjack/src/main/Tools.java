@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -177,7 +179,7 @@ public class Tools {
 			res1 = replace(res1, " ", "", "\\", new String[] { "\"", "\"" });
 			res1 = replace(res1, "\t", "", "\\", new String[] { "\"", "\"" });
 			res1 = replace(res1, " \r", "", "\\", new String[] { "\"", "\"" });
-			
+
 			res1 = replace(res1, "{", "{\n", "\\", new String[] { "\"", "\"" });
 			res1 = replace(res1, "[", "[\n", "\\", new String[] { "\"", "\"" });
 			res1 = replace(res1, "}", "\n}", "\\", new String[] { "\"", "\"" });
@@ -708,6 +710,87 @@ public class Tools {
 	 * input.
 	 */
 	public static class Console {
+		/**
+		 * A print stream that prints two places at once.
+		 */
+		public static class DoublePrintStream extends PrintStream {
+			private final OutputStream fos;
+
+			public DoublePrintStream(OutputStream out, String filename) {
+				super(out);
+
+				try {
+					fos = new FileOutputStream(new File(filename));
+				} catch (FileNotFoundException e) {
+					throw new AssertionError("couldn't create file", e);
+				}
+			}
+
+			public OutputStream getOut() {
+				return this.out;
+			}
+
+			public DoublePrintStream(OutputStream out, FileOutputStream fos) {
+				super(out);
+
+				this.fos = fos;
+			}
+
+			@Override
+			public synchronized void write(byte[] buf, int off, int len) {
+				super.write(buf, off, len);
+
+				try {
+					fos.write(buf, off, len);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public synchronized void close() {
+				try {
+					fos.close();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				} finally {
+					super.close();
+				}
+			}
+		}
+
+		/**
+		 * Allows you to copy the console into a file. Most likely you will want to call
+		 * this at the very beginning of your program. Only call it at other times if
+		 * you would like to only capture partial logs.
+		 * 
+		 * @param outputFile file path to put console output
+		 */
+		public static void directConsole(String outputFile) {
+			Files.writeToFile(outputFile, "");
+			try {
+				FileOutputStream output = new FileOutputStream(outputFile);
+				System.setOut(new DoublePrintStream(System.out, output));
+				System.setErr(new DoublePrintStream(System.err, output));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+
+		/**
+		 * Allows you to revert the console back to its normal form after calling the
+		 * directConsole method.
+		 */
+		public static void revertConsole() {
+			if (System.out instanceof DoublePrintStream) {
+				System.setOut((PrintStream) ((DoublePrintStream) System.out).getOut());
+			}
+
+			if (System.err instanceof DoublePrintStream) {
+				System.setErr((PrintStream) ((DoublePrintStream) System.err).getOut());
+			}
+		}
+
 		private static Scanner reader = new Scanner(new BufferedInputStream(System.in));
 
 		/**

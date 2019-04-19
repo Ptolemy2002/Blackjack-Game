@@ -62,6 +62,7 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
+	public static final String LOG_PATH = PATH + "\\logs\\" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa").format(new Date()) + ".txt";
 	public static final String VERSION = "2.1";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
@@ -76,7 +77,7 @@ public class Main {
 			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" },
 			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" },
 			{ "Redesigned interface for the Blackjack game itself." }, { "Redesigned interface for the players." },
-			{ "Added shutdown detection", "Redesigned the interface of the game." }, {"Multiple bug fixes"} };
+			{ "Added shutdown detection", "Redesigned the interface of the game." }, { "Multiple bug fixes" } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -901,6 +902,8 @@ public class Main {
 		}
 
 		if (cont) {
+			Tools.Console.directConsole(LOG_PATH);
+
 			try {
 				LicenseManager.setHomePath(PATH);
 				if (!DEBUG_MODE) {
@@ -1083,8 +1086,7 @@ public class Main {
 								"restore defaults - will delete the latest save file and restore default settings.");
 						System.out.println("patch notes - view the patch notes of any specific version of Blackjack.");
 						System.out.println(
-								"view licenses - view the licenses of associated software. You can also find these in the file system at \""
-										+ PATH + "\\licenses");
+								"view licenses - view the licenses of associated software. You can also find these in the file system at \"APPDATA\\licenses\"");
 
 						System.out.println("");
 						System.out.println(
@@ -1182,23 +1184,24 @@ public class Main {
 						break;
 					}
 					System.out.println("");
-					throw new Exception("test");
+					//throw new Exception("test");
 				}
 			} catch (Exception e) {
-				//String console = new BufferedReader(System.out);
+				// String console = new BufferedReader(System.out);
 				Date d = new Date();
 				System.out.println("The game has crashed!");
 				if (Tools.Console.askBoolean("Would you like to view the error?", true)) {
 					e.printStackTrace();
 				}
-				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa");
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
 				pw.println("");
 				pw.println("save dump: \n" + Tools.Strings.prettyPrintJSON(getCurrentSave().toJSONString()));
-				//pw.println("console: \n" + console);
-				String path = PATH + "\\crash reports\\" + dateFormat.format(d) + ".txt";
+				if (Tools.Console.askBoolean("Would you like to include the console in your crash report?", true)) {
+					pw.println("console: \n" + Tools.Files.readFile(LOG_PATH, Main.class));
+				}
+				String path = PATH + "\\crash reports\\" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa").format(d) + ".txt";
 				if (Tools.Files.writeToFile(path, sw.toString())) {
 					System.out.println("Saved crash report to \"" + path + "\"");
 				} else {
