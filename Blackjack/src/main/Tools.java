@@ -88,6 +88,15 @@ public class Tools {
 				return false;
 			}
 		}
+		
+		private static boolean isAll0s(int[] l) {
+			for (Integer i : l) {
+				if (i > 0) {
+					return false;
+				}
+			}
+			return true;
+		}
 
 		/**
 		 * Tests if the character at the specified index of the specified string is
@@ -122,45 +131,44 @@ public class Tools {
 		public static String replace(String target, String segment, String replacement, String escapeChar,
 				String[]... ignoreChars) {
 			String res = "";
-			int ignoreCount = 0;
-			String startIgnoreChar = null;
-			String endIgnoreChar = null;
+			int[] ignoreCounts = new int[ignoreChars.length];
+			for (int i = 0; i < ignoreCounts.length; i++) {
+				ignoreCounts[i] = 0;
+			}
 
 			for (int i = 0; i < target.length(); i++) {
-				if (startIgnoreChar == null) {
-					for (String[] ignoreChar : ignoreChars) {
+				for (int j = 0; j < ignoreChars.length; j++) {
+					String[] ignoreChar = ignoreChars[j];
+					
+					if (ignoreChar[0].equals(ignoreChar[1])) {
 						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i, escapeChar)) {
-							// System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
-							ignoreCount++;
-							startIgnoreChar = ignoreChar[0];
-							endIgnoreChar = ignoreChar[1];
+							//System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
+							if (ignoreCounts[j] == 0) {
+								ignoreCounts[j]++;
+							} else {
+								ignoreCounts[j]--;
+							}
+							break;
+						}
+					} else {
+						if (segment(target, ignoreChar[0], i) && !isEscaped(target, i, escapeChar)) {
+							//System.out.println(i + " (" + target.charAt(i) + ") is not escaped.");
+							ignoreCounts[j]++;
+							break;
+						} else if (segment(target, ignoreChar[1], i) && !isEscaped(target, i, escapeChar)) {
+							ignoreCounts[j]--;
 							break;
 						}
 					}
-				} else if (startIgnoreChar.equals(endIgnoreChar)) {
-					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
-						ignoreCount--;
-					}
-				} else {
-					if (segment(target, startIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
-						ignoreCount++;
-					} else if (segment(target, endIgnoreChar, i) && !isEscaped(target, i, escapeChar)) {
-						ignoreCount--;
-					}
 				}
 
-				if (ignoreCount <= 0) {
-					ignoreCount = 0;
-					startIgnoreChar = null;
-					endIgnoreChar = null;
-				}
-
-				if (ignoreCount <= 0 && segment(target, segment, i)) {
+				if (isAll0s(ignoreCounts) && segment(target, segment, i)) {
 					res += replacement;
 					i += segment.length() - 1;
 				} else {
 					res += target.charAt(i);
 				}
+				//System.out.println(Arrays.toString(ignoreCounts));
 			}
 
 			return res;
