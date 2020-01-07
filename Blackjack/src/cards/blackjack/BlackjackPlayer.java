@@ -28,7 +28,15 @@ public class BlackjackPlayer extends CardPlayer {
 	@Override
 	public void play() {
 		if (surrendered) {
-			System.out.println(this.toString() + " has surrendered, so they can't play.");
+			if (!this.hasNatural()) {
+				System.out.println(this.toString() + " has surrendered, so they can't play.");
+			} else {
+				System.out.println(this.toString() + " has the hand " + this.getHand().toString()
+						+ " with the value " + this.getValue()
+						+ (this.hasNatural() ? " That's a natural!" : ""));
+				System.out.println("They won't play anymore.");
+			}
+			
 		} else {
 			if (getValue(true) > 21) {
 				valuableAce = false;

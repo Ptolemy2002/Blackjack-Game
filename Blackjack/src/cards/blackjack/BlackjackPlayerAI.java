@@ -51,8 +51,11 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 			int maxHits = ((BlackjackGame) gameIn).getMaxHits();
 			int hits = 0;
 			int dealerValue = ((BlackjackGame) gameIn).getVisibleDealerValue();
-
-			if (dealerValue >= 7) {
+			
+			if (this.hasSoftHand()) {
+				target = 18;
+			}
+			else if (dealerValue >= 7) {
 				target = 17;
 			} else if (dealerValue >= 4) {
 				target = 12;
@@ -67,7 +70,14 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 				System.out.println(this.toString() + " has run out of hits!");
 			}
 		} else {
-			System.out.println(this.toString() + " has surrendered, so they can't play.");
+			if (this.hasNatural()) {
+				System.out.println(this.toString() + " has the hand " + this.getHand().toString()
+						+ " with the value " + this.getValue()
+						+ (this.hasNatural() ? " That's a natural!" : ""));
+				System.out.println("They won't play anymore.");
+			} else {
+				System.out.println(this.toString() + " has surrendered, so they can't play.");
+			}
 		}
 	}
 

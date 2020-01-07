@@ -59,8 +59,9 @@ public class Main {
 	public static final String PATH = Tools.Variables.getAppdata() + "\\Ptolemy's code\\Blackjack";
 	public static final String LAUNCHER_PATH = Tools.Variables.getAppdata()
 			+ "\\Ptolemy's code\\Blackjack\\temp\\launcher.bat";
-	public static final String LOG_PATH = PATH + "\\logs\\" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa").format(new Date()) + ".txt";
-	public static final String VERSION = "2.1";
+	public static final String LOG_PATH = PATH + "\\logs\\"
+			+ new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa").format(new Date()) + ".txt";
+	public static final String VERSION = "2.2";
 	public static final String[][] patchNotes = { { "global release" },
 			{ "alerts will be made when a player goes bankrupt or goes into debt.", "bug fixes", "Added patch notes" },
 			{ "You can now convert ai players to normal and normal players to ai without data loss.",
@@ -74,7 +75,8 @@ public class Main {
 			{ "Redesigned interface for \"deck edit\" command.", "bug fixes" },
 			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" },
 			{ "Redesigned interface for the Blackjack game itself." }, { "Redesigned interface for the players." },
-			{ "Added shutdown detection", "Redesigned the interface of the game." }, { "Multiple bug fixes" } };
+			{ "Added shutdown detection", "Redesigned the interface of the game." }, { "Multiple bug fixes" },
+			{ "The game will no longer recognize getting a natural as surrendering." } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -89,6 +91,7 @@ public class Main {
 			add("beta 2.0-6");
 			add("2.0");
 			add("2.1");
+			add("2.2");
 		}
 	};
 
@@ -1181,7 +1184,7 @@ public class Main {
 						break;
 					}
 					System.out.println("");
-					//throw new Exception("test");
+					// throw new Exception("test");
 				}
 			} catch (Exception e) {
 				// String console = new BufferedReader(System.out);
@@ -1198,7 +1201,8 @@ public class Main {
 				if (Tools.Console.askBoolean("Would you like to include the console in your crash report?", true)) {
 					pw.println("console: \n" + Tools.Files.readFile(LOG_PATH, Main.class));
 				}
-				String path = PATH + "\\crash reports\\" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa").format(d) + ".txt";
+				String path = PATH + "\\crash reports\\" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ssa").format(d)
+						+ ".txt";
 				if (Tools.Files.writeToFile(path, sw.toString())) {
 					System.out.println("Saved crash report to \"" + path + "\"");
 				} else {

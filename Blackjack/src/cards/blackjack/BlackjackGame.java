@@ -270,11 +270,13 @@ public class BlackjackGame extends CardGame {
 							System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
 									+ this.getVisibleDealerValue());
 							for (CardPlayer j : this.getPlayers()) {
-								if (((BlackjackPlayer) j).surrendered) {
+								BlackjackPlayer bp = (BlackjackPlayer) j;
+								if (bp.surrendered && !bp.hasNatural()) {
 									System.out.println(j.toString() + " has surrendered!");
 								} else {
 									System.out.println(j.toString() + " has the hand " + j.getHand().toString()
-											+ " with the value " + ((BlackjackPlayer) j).getValue());
+											+ " with the value " + ((BlackjackPlayer) j).getValue()
+											+ (bp.hasNatural() ? " That's a natural!" : ""));
 								}
 							}
 							break;
@@ -342,11 +344,13 @@ public class BlackjackGame extends CardGame {
 						System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
 								+ this.getVisibleDealerValue());
 						for (CardPlayer j : this.getPlayers()) {
-							if (((BlackjackPlayer) j).surrendered) {
+							BlackjackPlayer bp = (BlackjackPlayer) j;
+							if (bp.surrendered && !bp.hasNatural()) {
 								System.out.println(j.toString() + " has surrendered!");
 							} else {
 								System.out.println(j.toString() + " has the hand " + j.getHand().toString()
-										+ " with the value " + ((BlackjackPlayer) j).getValue());
+										+ " with the value " + ((BlackjackPlayer) j).getValue()
+										+ (bp.hasNatural() ? " That's a natural!" : ""));
 							}
 						}
 						break;
@@ -415,11 +419,13 @@ public class BlackjackGame extends CardGame {
 								System.out.println("The dealer has the hand " + this.getDealerHand()
 										+ " with the value " + this.getVisibleDealerValue());
 								for (CardPlayer j : this.getPlayers()) {
-									if (((BlackjackPlayer) j).surrendered) {
+									BlackjackPlayer bp = (BlackjackPlayer) j;
+									if (bp.surrendered && !bp.hasNatural()) {
 										System.out.println(j.toString() + " has surrendered!");
 									} else {
 										System.out.println(j.toString() + " has the hand " + j.getHand().toString()
-												+ " with the value " + ((BlackjackPlayer) j).getValue());
+												+ " with the value " + ((BlackjackPlayer) j).getValue()
+												+ (bp.hasNatural() ? " That's a natural!" : ""));
 									}
 								}
 								break;
