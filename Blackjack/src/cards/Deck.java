@@ -101,6 +101,42 @@ public class Deck {
 
 		return res;
 	}
+	
+	public boolean hasCard(EnumCardSuit suit) {
+		for (Card i : cards) {
+			if (i.suit == suit) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasCard(EnumCardNumber number) {
+		for (Card i : cards) {
+			if (i.number == number) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasCard(EnumCardSuit suit, boolean requireFaceUp) {
+		for (Card i : cards) {
+			if (i.suit == suit && (!requireFaceUp || i.faceUp)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasCard(EnumCardNumber number, boolean requireFaceUp) {
+		for (Card i : cards) {
+			if (i.number == number && (!requireFaceUp || i.faceUp)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Get the current list of cards in the deck.

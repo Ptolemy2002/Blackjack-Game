@@ -1,5 +1,6 @@
 package cards.blackjack;
 
+import cards.EnumCardNumber;
 import main.Tools;
 
 public class BlackjackPlayerAI extends BlackjackPlayer {
@@ -12,10 +13,17 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 
 	public int drawUntilTarget(int maxHits) {
 		if (this.hasSoftHand()) {
-			this.valuableAce = this.getValue(true) >= target && this.getValue(true) <= 21;
+			this.valuableAce = this.getVisibleValue(true) >= target && this.getVisibleValue(true) <= 21;
 			if (this.valuableAce) {
 				System.out.println(this.toString() + " has decided to count their ace as 11!");
 			}
+		}
+
+		if (this.getValue() > 21) {
+			this.surrendered = true;
+			System.out.println(this.toString() + " has gone bust! They are forced to surrender and lose their bet ($"
+					+ this.getBet() + ")!");
+			this.collect(this.getBet());
 		}
 
 		int hits = 0;
@@ -33,9 +41,8 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 					this.toString() + " now has the hand " + this.getHand() + " with the value " + this.getValue());
 			if (this.getValue() > 21) {
 				this.surrendered = true;
-				System.out.println(
-						this.toString() + " has gone bust! They are forced to surrender and lose their bet ($"
-								+ this.getBet() + ")!");;
+				System.out.println(this.toString()
+						+ " has gone bust with the hand " + this.getHand() + "! They are forced to surrender and lose their bet ($" + this.getBet() + ")!");
 				this.collect(this.getBet());
 				break;
 			}
@@ -48,14 +55,37 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 	public void play() {
 		if (!this.surrendered) {
 			System.out.println("It's " + this.toString() + "'s turn!");
+			if (isFirstPlay) {
+				if (canDoubleDown()) {
+					if (getValue() == 11) {
+						isDoublingdown = true;
+					} else if (getValue() == 10 && !(gameIn.getDealerHand().hasCard(EnumCardNumber.ACE, true)
+							|| gameIn.getDealerHand().hasCard(EnumCardNumber.TEN, true))) {
+						isDoublingdown = true;
+					} else if (getValue() == 9 && ((BlackjackGame) gameIn).getVisibleDealerValue() >= 2
+							&& ((BlackjackGame) gameIn).getVisibleDealerValue() <= 6) {
+						isDoublingdown = true;
+					} else {
+						isDoublingdown = false;
+					}
+
+					if (isDoublingdown) {
+						System.out.println(this.toString() + " has decided to double down!");
+						this.deal(gameIn.getDeck().drawTop().setFaceUp(false));
+					} else {
+						System.out.println(this.toString() + " has decided not to double down!");
+					}
+				}
+				isFirstPlay = false;
+			}
+
 			int maxHits = ((BlackjackGame) gameIn).getMaxHits();
 			int hits = 0;
 			int dealerValue = ((BlackjackGame) gameIn).getVisibleDealerValue();
-			
+
 			if (this.hasSoftHand()) {
 				target = 18;
-			}
-			else if (dealerValue >= 7) {
+			} else if (dealerValue >= 7) {
 				target = 17;
 			} else if (dealerValue >= 4) {
 				target = 12;
@@ -71,9 +101,8 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 			}
 		} else {
 			if (this.hasNatural()) {
-				System.out.println(this.toString() + " has the hand " + this.getHand().toString()
-						+ " with the value " + this.getValue()
-						+ (this.hasNatural() ? " That's a natural!" : ""));
+				System.out.println(this.toString() + " has the hand " + this.getHand().toString() + " with the value "
+						+ this.getValue() + (this.hasNatural() ? " That's a natural!" : ""));
 				System.out.println("They won't play anymore.");
 			} else {
 				System.out.println(this.toString() + " has surrendered, so they can't play.");
@@ -92,7 +121,7 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 		this.setBet(result);
 		return result;
 	}
-	
+
 	@Override
 	public boolean isAI() {
 		return true;

@@ -76,7 +76,9 @@ public class Main {
 			{ "Redesigned the interface for the \"player setup\" command.", "bug fixes with JSON formatting" },
 			{ "Redesigned interface for the Blackjack game itself." }, { "Redesigned interface for the players." },
 			{ "Added shutdown detection", "Redesigned the interface of the game." }, { "Multiple bug fixes" },
-			{ "The game will no longer recognize getting a natural as surrendering." } };
+			{ "The game will no longer recognize getting a natural as surrendering.",
+					"The game will no longer recognize going bust as surrendering.",
+					"Added the option to double down when applicable." } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");

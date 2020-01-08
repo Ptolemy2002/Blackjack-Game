@@ -14,6 +14,8 @@ public class BlackjackPlayer extends CardPlayer {
 	protected boolean isFirstPlay = true;
 	protected boolean valuableAce = false;
 	protected boolean surrendered = false;
+	protected boolean isDoublingdown = false;
+	protected boolean goneBust = false;
 
 	public BlackjackPlayer(BlackjackGame game, int id) {
 		super(id);
@@ -25,9 +27,21 @@ public class BlackjackPlayer extends CardPlayer {
 				&& (this.getHand().getBottom().isTenCard() && this.getHand().getTop().number == EnumCardNumber.ACE)
 				|| (this.getHand().getTop().isTenCard() && this.getHand().getBottom().number == EnumCardNumber.ACE);
 	}
-	
+
 	public boolean canDoubleDown() {
 		return isFirstPlay && (getValue() == 9 || getValue() == 10 || getValue() == 11);
+	}
+
+	public boolean isDoublingdown() {
+		return isDoublingdown;
+	}
+	
+	public void setDoublingdown(boolean isDoublingdown) {
+		this.isDoublingdown = isDoublingdown;
+	}
+	
+	public boolean goneBust() {
+		return goneBust;
 	}
 
 	@Override
@@ -36,19 +50,23 @@ public class BlackjackPlayer extends CardPlayer {
 			if (!this.hasNatural()) {
 				System.out.println(this.toString() + " has surrendered, so they can't play.");
 			} else {
-				System.out.println(this.toString() + " has the hand " + this.getHand().toString()
-						+ " with the value " + this.getVisibleValue()
-						+ (this.hasNatural() ? " That's a natural!" : ""));
+				System.out.println(this.toString() + " has the hand " + this.getHand().toString() + " with the value "
+						+ this.getVisibleValue() + (this.hasNatural() ? " That's a natural!" : ""));
 				System.out.println("They won't play anymore.");
 			}
-			
+
 		} else {
-			if (getValue(true) > 21) {
-				valuableAce = false;
-			}
 			System.out.println("It's " + this.toString() + "'s turn!");
 			if (isFirstPlay) {
-				
+				if (canDoubleDown()) {
+					System.out.println(this.toString() + " can double down if they would like.");
+					isDoublingdown = Tools.Console.askBoolean(
+							"Would " + this.toString() + " like to double down (this decision is irreversible)?", true);
+					if (isDoublingdown) {
+						this.deal(gameIn.getDeck().drawTop().setFaceUp(false));
+					}
+				}
+
 				isFirstPlay = false;
 			}
 			System.out.println("Type a command. Type \"help\" to view your choices.");
@@ -56,18 +74,6 @@ public class BlackjackPlayer extends CardPlayer {
 			int maxHits = ((BlackjackGame) gameIn).getMaxHits();
 			int hits = 0;
 			loop: while (hits < maxHits) {
-				if (this.getValue() > 21) {
-					this.surrendered = true;
-					for (Card i : this.hand.getCards()) {
-						i.setFaceUp(true);
-					}
-					System.out.println(
-							this.toString() + " has gone bust! They are forced to surrender and lose their bet ($"
-									+ this.getBet() + ")!");
-					this.collect(this.getBet());
-					break;
-				}
-
 				ArrayList<String> choices = new ArrayList<String>() {
 					{
 						add("hit");
@@ -92,11 +98,25 @@ public class BlackjackPlayer extends CardPlayer {
 						if (valuableAce == true) {
 							valuableAce = false;
 							if (!(getValue() > 21)) {
-								System.out.println("If " + this.toString() + " counts their ace as 11, they will go bust!");
+								System.out.println(
+										"If " + this.toString() + " counts their ace as 11, they will go bust!");
 								System.out.println(this.toString() + " is forced to count their ace as 1.");
 							}
 						}
 					}
+				}
+				
+				if (this.getValue() > 21) {
+					this.surrendered = true;
+					for (Card i : this.hand.getCards()) {
+						i.setFaceUp(true);
+					}
+					System.out.println(
+							this.toString() + " has gone bust with the hand " + this.getHand() + "! They are forced to surrender and lose their bet ($"
+									+ this.getBet() + ")!");
+					goneBust = true;
+					this.collect(this.getBet());
+					break;
 				}
 
 				String choice = Tools.Console.askSelection("Choices", choices, true,
@@ -212,7 +232,7 @@ public class BlackjackPlayer extends CardPlayer {
 
 		return res;
 	}
-	
+
 	public int getVisibleValue() {
 		int res = 0;
 		int aces = 0;
@@ -258,7 +278,7 @@ public class BlackjackPlayer extends CardPlayer {
 
 		return res;
 	}
-	
+
 	public int getVisibleValue(boolean valuableAce) {
 		int res = 0;
 		int aces = 0;
