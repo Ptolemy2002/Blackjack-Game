@@ -11,6 +11,7 @@ import main.Tools;
 
 @SuppressWarnings("serial")
 public class BlackjackPlayer extends CardPlayer {
+	protected boolean isFirstPlay = true;
 	protected boolean valuableAce = false;
 	protected boolean surrendered = false;
 
@@ -24,6 +25,10 @@ public class BlackjackPlayer extends CardPlayer {
 				&& (this.getHand().getBottom().isTenCard() && this.getHand().getTop().number == EnumCardNumber.ACE)
 				|| (this.getHand().getTop().isTenCard() && this.getHand().getBottom().number == EnumCardNumber.ACE);
 	}
+	
+	public boolean canDoubleDown() {
+		return isFirstPlay && (getValue() == 9 || getValue() == 10 || getValue() == 11);
+	}
 
 	@Override
 	public void play() {
@@ -32,7 +37,7 @@ public class BlackjackPlayer extends CardPlayer {
 				System.out.println(this.toString() + " has surrendered, so they can't play.");
 			} else {
 				System.out.println(this.toString() + " has the hand " + this.getHand().toString()
-						+ " with the value " + this.getValue()
+						+ " with the value " + this.getVisibleValue()
 						+ (this.hasNatural() ? " That's a natural!" : ""));
 				System.out.println("They won't play anymore.");
 			}
@@ -42,6 +47,10 @@ public class BlackjackPlayer extends CardPlayer {
 				valuableAce = false;
 			}
 			System.out.println("It's " + this.toString() + "'s turn!");
+			if (isFirstPlay) {
+				
+				isFirstPlay = false;
+			}
 			System.out.println("Type a command. Type \"help\" to view your choices.");
 
 			int maxHits = ((BlackjackGame) gameIn).getMaxHits();
@@ -49,6 +58,9 @@ public class BlackjackPlayer extends CardPlayer {
 			loop: while (hits < maxHits) {
 				if (this.getValue() > 21) {
 					this.surrendered = true;
+					for (Card i : this.hand.getCards()) {
+						i.setFaceUp(true);
+					}
 					System.out.println(
 							this.toString() + " has gone bust! They are forced to surrender and lose their bet ($"
 									+ this.getBet() + ")!");
@@ -131,6 +143,9 @@ public class BlackjackPlayer extends CardPlayer {
 					}
 					break;
 				}
+				for (Card i : this.hand.getCards()) {
+					i.setFaceUp(true);
+				}
 				System.out.println("");
 			}
 
@@ -197,6 +212,30 @@ public class BlackjackPlayer extends CardPlayer {
 
 		return res;
 	}
+	
+	public int getVisibleValue() {
+		int res = 0;
+		int aces = 0;
+		for (Card i : this.hand.getCards()) {
+			if (i.faceUp) {
+				if (EnumCardNumber.isFace(i.number) || i.number == EnumCardNumber.TEN) {
+					res += 10;
+				} else if (i.number == EnumCardNumber.ACE) {
+					aces++;
+					// A player cannot count more than 1 ace as 11, or they will go bust.
+					if (valuableAce && aces == 1) {
+						res += 11;
+					} else {
+						res++;
+					}
+				} else {
+					res += i.number.ordinal() + 1;
+				}
+			}
+		}
+
+		return res;
+	}
 
 	public int getValue(boolean valuableAce) {
 		int res = 0;
@@ -214,6 +253,30 @@ public class BlackjackPlayer extends CardPlayer {
 				}
 			} else {
 				res += i.number.ordinal() + 1;
+			}
+		}
+
+		return res;
+	}
+	
+	public int getVisibleValue(boolean valuableAce) {
+		int res = 0;
+		int aces = 0;
+		for (Card i : this.hand.getCards()) {
+			if (i.faceUp) {
+				if (EnumCardNumber.isFace(i.number) || i.number == EnumCardNumber.TEN) {
+					res += 10;
+				} else if (i.number == EnumCardNumber.ACE) {
+					aces++;
+					// A player cannot count more than 1 ace as 11, or they will go bust.
+					if (valuableAce && aces == 1) {
+						res += 11;
+					} else {
+						res++;
+					}
+				} else {
+					res += i.number.ordinal() + 1;
+				}
 			}
 		}
 
