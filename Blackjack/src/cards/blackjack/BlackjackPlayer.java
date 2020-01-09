@@ -64,6 +64,9 @@ public class BlackjackPlayer extends CardPlayer {
 							"Would " + this.toString() + " like to double down (this decision is irreversible)?", true);
 					if (isDoublingdown) {
 						this.deal(gameIn.getDeck().drawTop().setFaceUp(false));
+						System.out.println(this.toString() + " has been dealt a face down card.");
+						System.out.println(this.toString() + " now has the hand " + this.getHand().toString() + " with the value "
+								+ this.getVisibleValue());
 					}
 				}
 
@@ -113,9 +116,9 @@ public class BlackjackPlayer extends CardPlayer {
 					}
 					System.out.println(
 							this.toString() + " has gone bust with the hand " + this.getHand() + "! They are forced to surrender and lose their bet ($"
-									+ this.getBet() + ")!");
+									+ (this.getBet() * (isDoublingdown ? 2 : 1)) + ")!");
 					goneBust = true;
-					this.collect(this.getBet());
+					this.collect(this.getBet() * (isDoublingdown ? 2 : 1));
 					break;
 				}
 
@@ -125,7 +128,7 @@ public class BlackjackPlayer extends CardPlayer {
 				switch (choice) {
 				case "view stats":
 					System.out.println(this.toString() + "'s hand is " + this.getHand().toString() + " with the value "
-							+ this.getValue());
+							+ this.getVisibleValue());
 					System.out.println(this.toString() + " has hit " + hits + "/"
 							+ (maxHits == Integer.MAX_VALUE ? "Infinity" : maxHits) + " times.");
 					break;
@@ -133,7 +136,7 @@ public class BlackjackPlayer extends CardPlayer {
 					this.deal(gameIn.getDeck().drawTop().setFaceUp(true));
 					System.out.println(this.toString() + " has hit!");
 					System.out.println(this.toString() + " now has the hand " + this.getHand() + " with the value "
-							+ this.getValue());
+							+ this.getVisibleValue());
 					hits++;
 					if (this.getGame().getDeck().getCards().size() == 0) {
 						System.out.println("The deck ran out of cards!");
@@ -163,10 +166,11 @@ public class BlackjackPlayer extends CardPlayer {
 					}
 					break;
 				}
-				for (Card i : this.hand.getCards()) {
-					i.setFaceUp(true);
-				}
+				
 				System.out.println("");
+			}
+			for (Card i : this.hand.getCards()) {
+				i.setFaceUp(true);
 			}
 
 			if (hits == maxHits) {

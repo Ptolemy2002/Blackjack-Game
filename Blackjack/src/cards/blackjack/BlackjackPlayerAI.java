@@ -1,5 +1,6 @@
 package cards.blackjack;
 
+import cards.Card;
 import cards.EnumCardNumber;
 import main.Tools;
 
@@ -12,22 +13,33 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 	}
 
 	public int drawUntilTarget(int maxHits) {
+		//Attempt to compensate for the unknown card
+		if (this.isDoublingdown) {
+			target -= 3;
+		}
+		
 		if (this.hasSoftHand()) {
 			this.valuableAce = this.getVisibleValue(true) >= target && this.getVisibleValue(true) <= 21;
 			if (this.valuableAce) {
 				System.out.println(this.toString() + " has decided to count their ace as 11!");
+			} else {
+				System.out.println(this.toString() + " has decided not to count their ace as 11!");
 			}
 		}
 
 		if (this.getValue() > 21) {
 			this.surrendered = true;
-			System.out.println(this.toString() + " has gone bust! They are forced to surrender and lose their bet ($"
-					+ this.getBet() + ")!");
-			this.collect(this.getBet());
+			for (Card i : this.hand.getCards()) {
+				i.setFaceUp(true);
+			}
+			System.out.println(this.toString() + " has gone bust with the hand " + this.getHand() + " and the value "
+					+ this.getValue() + "! They are forced to surrender and lose their bet ($"
+					+ (this.getBet() * (isDoublingdown ? 2 : 1)) + ")!");
+			this.collect((this.getBet() * (isDoublingdown ? 2 : 1)));
 		}
 
 		int hits = 0;
-		while (hits < maxHits && this.getValue() < this.target) {
+		while (hits < maxHits && this.getVisibleValue() < this.target) {
 			this.deal(gameIn.getDeck().drawTop().setFaceUp(true));
 			hits++;
 			if (this.getGame().getDeck().getCards().size() == 0) {
@@ -37,15 +49,8 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 				this.getGame().getDeck().shuffle();
 			}
 			System.out.println(this.toString() + " has hit!");
-			System.out.println(
-					this.toString() + " now has the hand " + this.getHand() + " with the value " + this.getValue());
-			if (this.getValue() > 21) {
-				this.surrendered = true;
-				System.out.println(this.toString()
-						+ " has gone bust with the hand " + this.getHand() + "! They are forced to surrender and lose their bet ($" + this.getBet() + ")!");
-				this.collect(this.getBet());
-				break;
-			}
+			System.out.println(this.toString() + " now has the hand " + this.getHand() + " with the value "
+					+ this.getVisibleValue());
 		}
 
 		return hits;
@@ -71,6 +76,9 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 
 					if (isDoublingdown) {
 						System.out.println(this.toString() + " has decided to double down!");
+						System.out.println(this.toString() + " has been dealt a face down card.");
+						System.out.println(this.toString() + " now has the hand " + this.getHand().toString()
+								+ " with the value " + this.getVisibleValue());
 						this.deal(gameIn.getDeck().drawTop().setFaceUp(false));
 					} else {
 						System.out.println(this.toString() + " has decided not to double down!");
@@ -94,15 +102,36 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 			}
 
 			hits += drawUntilTarget(maxHits);
-			if (hits < maxHits) {
+
+			for (Card i : this.hand.getCards()) {
+				i.setFaceUp(true);
+			}
+
+			if (hits < maxHits && !goneBust) {
 				System.out.println(this.toString() + " has passed.");
-			} else {
+			} else if (!goneBust) {
 				System.out.println(this.toString() + " has run out of hits!");
+			}
+			
+			if (this.getValue() > 21) {
+				this.surrendered = true;
+				this.goneBust = true;
+				for (Card i : this.hand.getCards()) {
+					i.setFaceUp(true);
+				}
+				System.out.println(this.toString() + " has gone bust with the hand " + this.getHand()
+						+ " and the value " + this.getValue() + "! They are forced to surrender and lose their bet ($"
+						+ (this.getBet() * (isDoublingdown ? 2 : 1)) + ")!");
+				this.collect((this.getBet() * (isDoublingdown ? 2 : 1)));
 			}
 		} else {
 			if (this.hasNatural()) {
 				System.out.println(this.toString() + " has the hand " + this.getHand().toString() + " with the value "
-						+ this.getValue() + (this.hasNatural() ? " That's a natural!" : ""));
+						+ this.getVisibleValue() + (this.hasNatural() ? " That's a natural!" : ""));
+				System.out.println("They won't play anymore.");
+			} else if (goneBust) {
+				System.out.println(this.toString() + " has gone bust with the hand " + this.getHand()
+						+ " and the value " + this.getValue());
 				System.out.println("They won't play anymore.");
 			} else {
 				System.out.println(this.toString() + " has surrendered, so they can't play.");
@@ -112,6 +141,7 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 
 	@Override
 	public Double makeBet(Double min, Double max) {
+		System.out.println(this.toString() + " has $" + this.getMoney());
 		// If they don't have enough money, they will bet less.
 		Double result = Tools.Numbers.roundDouble(Tools.Numbers.randomDouble(min,
 				(max > this.getMoney() ? this.getMoney() < min ? min + 10 > max ? max : min + 10 : this.getMoney()

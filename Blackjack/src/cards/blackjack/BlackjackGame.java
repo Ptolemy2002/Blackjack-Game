@@ -190,17 +190,44 @@ public class BlackjackGame extends CardGame {
 				dealHands();
 				System.out.println("All players have been dealt.");
 				if (this.hasNatural()) {
+					for (Card c : this.deck.getCards()) {
+						c.setFaceUp(true);
+					}
 					System.out.println("The dealer has a natural!");
 					for (CardPlayer i : this.getPlayers()) {
 						if (((BlackjackPlayer) i).hasNatural()) {
 							System.out.println(i.toString() + " also has a natural, so they get nothing.");
 						} else {
 							i.collect(i.getBet() * (((BlackjackPlayer) i).isDoublingdown() ? 2 : 1));
-							System.out.println(i.toString() + " does not hava a natural, so they lose their bet ($"
+							System.out.println(i.toString() + " does not have a natural, so they lose their bet ($"
 									+ (i.getBet() * (((BlackjackPlayer) i).isDoublingdown() ? 2 : 1)) + ")!");
 						}
-						return;
 					}
+					
+					if (Tools.Console.askBoolean("Would you like to view the final hands?", true)) {
+						System.out.println("The dealer has the hand " + this.getDealerHand() + " with the value "
+								+ this.getDealerValue() + (this.hasNatural() ? " That's a natural!" : ""));
+						for (CardPlayer j : this.getPlayers()) {
+							BlackjackPlayer bp = (BlackjackPlayer) j;
+							if (bp.surrendered && !bp.goneBust() && !bp.hasNatural()) {
+								System.out.println(j.toString() + " has surrendered!");
+							} else if (bp.goneBust()) {
+								System.out
+										.println(j.toString() + " went bust with the hand " + j.getHand().toString()
+												+ " and the value " + ((BlackjackPlayer) j).getVisibleValue());
+							} else {
+								System.out.println(j.toString() + " has the hand " + j.getHand().toString()
+										+ " with the value " + ((BlackjackPlayer) j).getValue()
+										+ (bp.hasNatural() ? " That's a natural!" : ""));
+							}
+						}
+					}
+					if (Tools.Console.askBoolean("Would you like to reset everyone's bets?", true)) {
+						for (CardPlayer j : this.getPlayers()) {
+							j.setBet(0.0);
+						}
+					}
+					return;
 				} else {
 					for (CardPlayer i : this.getPlayers()) {
 						if (((BlackjackPlayer) i).hasNatural()) {
@@ -209,6 +236,7 @@ public class BlackjackGame extends CardGame {
 							System.out.println(i.toString() + " has a natural, so they win with a payout of 3:2 ($"
 									+ (i.getBet() * 1.5 * (((BlackjackPlayer) i).isDoublingdown() ? 2 : 1))
 									+ ")! They will no longer play.");
+							((BlackjackPlayer) i).valuableAce = true;
 						}
 					}
 				}
@@ -279,8 +307,9 @@ public class BlackjackGame extends CardGame {
 								if (bp.surrendered && !bp.goneBust() && !bp.hasNatural()) {
 									System.out.println(j.toString() + " has surrendered!");
 								} else if (bp.goneBust()) {
-									System.out.println(j.toString() + " went bust with the hand "
-											+ j.getHand().toString() + " and the value " + ((BlackjackPlayer) j).getVisibleValue());
+									System.out
+											.println(j.toString() + " went bust with the hand " + j.getHand().toString()
+													+ " and the value " + ((BlackjackPlayer) j).getVisibleValue());
 								} else {
 									System.out.println(j.toString() + " has the hand " + j.getHand().toString()
 											+ " with the value " + ((BlackjackPlayer) j).getValue()
@@ -357,7 +386,8 @@ public class BlackjackGame extends CardGame {
 								System.out.println(j.toString() + " has surrendered!");
 							} else if (bp.goneBust()) {
 								System.out.println(
-										j.toString() + " went bust with the hand the hand " + j.getHand().toString() + " and the value " + ((BlackjackPlayer) j).getVisibleValue());
+										j.toString() + " went bust with the hand the hand " + j.getHand().toString()
+												+ " and the value " + ((BlackjackPlayer) j).getVisibleValue());
 							} else {
 								System.out.println(j.toString() + " has the hand " + j.getHand().toString()
 										+ " with the value " + ((BlackjackPlayer) j).getValue()
@@ -435,7 +465,8 @@ public class BlackjackGame extends CardGame {
 										System.out.println(j.toString() + " has surrendered!");
 									} else if (bp.goneBust()) {
 										System.out.println(
-												j.toString() + " went bust with the hand " + j.getHand().toString() + " and the value " + ((BlackjackPlayer) j).getVisibleValue());
+												j.toString() + " went bust with the hand " + j.getHand().toString()
+														+ " and the value " + ((BlackjackPlayer) j).getVisibleValue());
 									} else {
 										System.out.println(j.toString() + " has the hand " + j.getHand().toString()
 												+ " with the value " + ((BlackjackPlayer) j).getValue()
@@ -511,8 +542,9 @@ public class BlackjackGame extends CardGame {
 								if (bp.surrendered && !bp.goneBust() && !bp.hasNatural()) {
 									System.out.println(j.toString() + " has surrendered!");
 								} else if (bp.goneBust()) {
-									System.out.println(j.toString() + " went bust with the hand the hand "
-											+ j.getHand().toString() + " and the value " + ((BlackjackPlayer) j).getVisibleValue());
+									System.out.println(
+											j.toString() + " went bust with the hand the hand " + j.getHand().toString()
+													+ " and the value " + ((BlackjackPlayer) j).getVisibleValue());
 								} else {
 									System.out.println(j.toString() + " has the hand " + j.getHand().toString()
 											+ " with the value " + ((BlackjackPlayer) j).getValue()
@@ -548,7 +580,8 @@ public class BlackjackGame extends CardGame {
 						if (bp.surrendered && !bp.goneBust() && !bp.hasNatural()) {
 							System.out.println(j.toString() + " has surrendered!");
 						} else if (bp.goneBust()) {
-							System.out.println(j.toString() + " went bust with the hand " + j.getHand().toString() + " and the value " + ((BlackjackPlayer) j).getVisibleValue());
+							System.out.println(j.toString() + " went bust with the hand " + j.getHand().toString()
+									+ " and the value " + ((BlackjackPlayer) j).getVisibleValue());
 						} else {
 							System.out.println(j.toString() + " has the hand " + j.getHand().toString()
 									+ " with the value " + ((BlackjackPlayer) j).getValue()
@@ -579,10 +612,11 @@ public class BlackjackGame extends CardGame {
 						if (bp.surrendered && !bp.goneBust() && !bp.hasNatural()) {
 							System.out.println(i.toString() + " has surrendered!");
 						} else if (bp.goneBust()) {
-							System.out.println(i.toString() + " went bust with the hand " + i.getHand().toString() + " and the value " + ((BlackjackPlayer) i).getVisibleValue());
+							System.out.println(i.toString() + " went bust with the hand " + i.getHand().toString()
+									+ " and the value " + ((BlackjackPlayer) i).getVisibleValue());
 						} else {
 							System.out.println(i.toString() + " has the hand " + i.getHand().toString()
-									+ " with the value " + ((BlackjackPlayer) i).getValue() 
+									+ " with the value " + ((BlackjackPlayer) i).getValue()
 									+ (bp.hasNatural() ? " That's a natural!" : ""));
 						}
 					}
