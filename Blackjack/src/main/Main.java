@@ -42,7 +42,7 @@ public class Main {
 	/**
 	 * This should be true if running in eclipse, but false otherwise.
 	 */
-	public static final boolean DEBUG_MODE = true;
+	public static final boolean DEBUG_MODE = false;
 
 	public static Double minBet = 2.0;
 	public static Double maxBet = 500.0;
@@ -78,7 +78,8 @@ public class Main {
 			{ "Added shutdown detection", "Redesigned the interface of the game." }, { "Multiple bug fixes" },
 			{ "The game will no longer recognize getting a natural as surrendering.",
 					"The game will no longer recognize going bust as surrendering.",
-					"Added the option to double down when applicable." } };
+					"Added the option to double down when applicable.",
+					"The game is now more descriptive about what is happening during a round.", "Small bug fixes" } };
 	public static final ArrayList<String> versionCodes = new ArrayList<String>() {
 		{
 			add("1.0");
@@ -904,9 +905,8 @@ public class Main {
 		}
 
 		if (cont) {
-			Tools.Console.directConsole(LOG_PATH);
-
 			try {
+				Tools.Console.directConsole(false, LOG_PATH);
 				LicenseManager.setHomePath(PATH);
 				if (!DEBUG_MODE) {
 					LicenseManager.addLicense("json-simple", "/licenses/json-simple/license.txt", Main.class);

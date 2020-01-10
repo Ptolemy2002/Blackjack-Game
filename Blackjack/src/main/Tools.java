@@ -16,9 +16,12 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.text.Normalizer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.LinkedHashMap;
@@ -719,46 +722,105 @@ public class Tools {
 	 */
 	public static class Console {
 		/**
-		 * A print stream that prints two places at once.
+		 * A print stream that prints to multiple places at once.
 		 */
-		public static class DoublePrintStream extends PrintStream {
-			private final OutputStream fos;
+		public static class MultiplePrintStream extends PrintStream {
+			private List<OutputStream> outputs = new ArrayList<OutputStream>();
+			private boolean useTimestamps;
 
-			public DoublePrintStream(OutputStream out, String filename) {
+			public MultiplePrintStream(OutputStream out, boolean useTimestamps, String... filenames) {
 				super(out);
-
-				try {
-					fos = new FileOutputStream(new File(filename));
-				} catch (FileNotFoundException e) {
-					throw new AssertionError("couldn't create file", e);
+				this.useTimestamps = useTimestamps;
+				for (String filename : filenames) {
+					try {
+						outputs.add(new FileOutputStream(new File(filename)));
+					} catch (FileNotFoundException e) {
+						throw new AssertionError("couldn't create file \"" + filename + "\"", e);
+					}
 				}
 			}
 
 			public OutputStream getOut() {
 				return this.out;
 			}
+			
+			public List<OutputStream> getOutputs() {
+				return this.outputs;
+			}
 
-			public DoublePrintStream(OutputStream out, FileOutputStream fos) {
+			public MultiplePrintStream(OutputStream out, boolean useTimestamps, OutputStream... fos) {
 				super(out);
-
-				this.fos = fos;
+				this.useTimestamps = useTimestamps;
+				this.outputs = Arrays.asList(fos);
+			}
+			
+			public MultiplePrintStream(OutputStream out, boolean useTimestamps) {
+				super(out);
+				this.useTimestamps = useTimestamps;
 			}
 
 			@Override
 			public synchronized void write(byte[] buf, int off, int len) {
-				super.write(buf, off, len);
-
 				try {
-					fos.write(buf, off, len);
-				} catch (IOException e) {
+					for (OutputStream out : this.outputs) {
+						out.write(buf, off, len);
+					}
+					this.getOut().write(buf, off, len);
+				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
 
 			@Override
+			public synchronized void write(int b) {
+				try {
+					for (OutputStream out : this.outputs) {
+						out.write(b);
+					}
+					this.getOut().write(b);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public synchronized void println(String obj) {
+				this.println((Object) obj);
+			}
+
+			@Override
+			public synchronized void println(Object obj) {
+				String s = obj.toString();
+				s = s.replaceAll("\\w*(?<!\r)\n", System.lineSeparator());
+				
+				if (this.useTimestamps) {
+					s = new SimpleDateFormat("[MM/dd/yyyy hh:mm:ss.SSS aa] ").format(new Date()) + s;
+				}
+
+				try {
+					super.println(s);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+			@Override
+			public void print(String s) {
+				super.print(s.replaceAll("\\w*(?<!\r)\n", System.lineSeparator()));
+			}
+			
+			@Override
+			public void print(Object obj) {
+				super.print(obj.toString().replaceAll("\\w*(?<!\r)\n", System.lineSeparator()));
+			}
+
+			@Override
 			public synchronized void close() {
 				try {
-					fos.close();
+					for (OutputStream out : this.outputs) {
+						out.close();
+					}
+					this.getOut().close();
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				} finally {
@@ -772,17 +834,38 @@ public class Tools {
 		 * this at the very beginning of your program. Only call it at other times if
 		 * you would like to only capture partial logs.
 		 * 
-		 * @param outputFile file path to put console output
+		 * @param useTimestamps whether to associate lines printed with timestamps
+		 * @param outputFiles   file paths to put console output
+		 * @throws IOException
 		 */
-		public static void directConsole(String outputFile) {
-			Files.writeToFile(outputFile, "");
+		public static void directConsole(boolean useTimestamps, String... outputFiles) throws FileNotFoundException {
 			try {
-				FileOutputStream output = new FileOutputStream(outputFile);
-				System.setOut(new DoublePrintStream(System.out, output));
-				System.setErr(new DoublePrintStream(System.err, output));
+				MultiplePrintStream out = new MultiplePrintStream(System.out, useTimestamps);
+				MultiplePrintStream err = new MultiplePrintStream(System.err, false);
+				
+				for (String i : outputFiles) {
+					OutputStream fos = new FileOutputStream(new File(i));
+					PrintStream p = new PrintStream(fos);
+					p.println("This log was created at " + new SimpleDateFormat("MM/dd/yyyy hh:mm:ss.SSS aa").format(new Date()));
+					p.println("This log DOES NOT include user input.");
+					if (useTimestamps) {
+						p.println("This log includes timestamps.");
+					} else {
+						p.println("This log DOES NOT include timestamps.");
+					}
+					p.println("-----------------------------------------");
+					p.println();
+					
+					out.getOutputs().add(fos);
+					err.getOutputs().add(fos);
+				}
+				
+				System.setOut(out);
+				System.setErr(err);
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				throw e;
 			}
+			
 		}
 
 		/**
@@ -790,12 +873,12 @@ public class Tools {
 		 * directConsole method.
 		 */
 		public static void revertConsole() {
-			if (System.out instanceof DoublePrintStream) {
-				System.setOut((PrintStream) ((DoublePrintStream) System.out).getOut());
+			if (System.out instanceof MultiplePrintStream) {
+				System.setOut((PrintStream) ((MultiplePrintStream) System.out).getOut());
 			}
 
-			if (System.err instanceof DoublePrintStream) {
-				System.setErr((PrintStream) ((DoublePrintStream) System.err).getOut());
+			if (System.err instanceof MultiplePrintStream) {
+				System.setErr((PrintStream) ((MultiplePrintStream) System.err).getOut());
 			}
 		}
 
@@ -1339,7 +1422,7 @@ public class Tools {
 								throw new NumberFormatException();
 							int indexChoice = Integer.parseInt(choice);
 							if (indexChoice <= newList.size() && indexChoice >= 1) {
-								if (Console.askBoolean("Did you mean index " + indexChoice + "?", true)) {
+								if (Console.askBoolean("Did you mean index " + indexChoice + " (" + newList.get(indexChoice - 1) + ")?", true)) {
 									return list.get(newList.indexOf(sortedList.get(indexChoice - 1)));
 								} else {
 									throw new NumberFormatException();
@@ -1378,7 +1461,7 @@ public class Tools {
 								throw new NumberFormatException();
 							int indexChoice = Integer.parseInt(choice);
 							if (indexChoice <= newList.size() && indexChoice >= 1) {
-								if (Console.askBoolean("Did you mean index " + indexChoice + "?", true)) {
+								if (Console.askBoolean("Did you mean index " + indexChoice + "(" + newList.get(indexChoice - 1) + ")?", true)) {
 									return list.get(newList.indexOf(sortedList.get(indexChoice - 1)));
 								} else {
 									throw new NumberFormatException();
@@ -1400,7 +1483,7 @@ public class Tools {
 							throw new NumberFormatException();
 						int indexChoice = Integer.parseInt(choice);
 						if (indexChoice <= newList.size() && indexChoice >= 1) {
-							if (Console.askBoolean("Did you mean index " + indexChoice + "?", true)) {
+							if (Console.askBoolean("Did you mean index " + indexChoice + "(" + newList.get(indexChoice - 1) + ")?", true)) {
 								return list.get(newList.indexOf(sortedList.get(indexChoice - 1)));
 							} else {
 								throw new NumberFormatException();
@@ -1691,6 +1774,8 @@ public class Tools {
 
 			return res;
 		}
+
+		
 	}
 
 	/**

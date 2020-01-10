@@ -124,6 +124,12 @@ public class BlackjackPlayerAI extends BlackjackPlayer {
 						+ (this.getBet() * (isDoublingdown ? 2 : 1)) + ")!");
 				this.collect((this.getBet() * (isDoublingdown ? 2 : 1)));
 			}
+			
+			if (isDoublingdown && isFirstPlay) {
+				System.out.println("Cards that were face down have been turned face up.");
+				System.out.println(this.toString() + " now has the hand " + this.getHand().toString()
+						+ " with the value " + this.getVisibleValue());
+			}
 		} else {
 			if (this.hasNatural()) {
 				System.out.println(this.toString() + " has the hand " + this.getHand().toString() + " with the value "
