@@ -844,6 +844,7 @@ public class Tools {
 				MultiplePrintStream err = new MultiplePrintStream(System.err, false);
 				
 				for (String i : outputFiles) {
+					Files.writeToFile(i, "");
 					OutputStream fos = new FileOutputStream(new File(i));
 					PrintStream p = new PrintStream(fos);
 					p.println("This log was created at " + new SimpleDateFormat("MM/dd/yyyy hh:mm:ss.SSS aa").format(new Date()));
